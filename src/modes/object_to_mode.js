@@ -1,18 +1,18 @@
-const ModeInterface = require('./mode_interface');
-
+const ModeInterface = require("./mode_interface");
+const _throttle = require("lodash.throttle");
 const eventMapper = {
-  drag: 'onDrag',
-  click: 'onClick',
-  mousemove: 'onMouseMove',
-  mousedown: 'onMouseDown',
-  mouseup: 'onMouseUp',
-  mouseout: 'onMouseOut',
-  keyup: 'onKeyUp',
-  keydown: 'onKeyDown',
-  touchstart: 'onTouchStart',
-  touchmove: 'onTouchMove',
-  touchend: 'onTouchEnd',
-  tap: 'onTap'
+  drag: "onDrag",
+  click: "onClick",
+  mousemove: "onMouseMove",
+  mousedown: "onMouseDown",
+  mouseup: "onMouseUp",
+  mouseout: "onMouseOut",
+  keyup: "onKeyUp",
+  keydown: "onKeyDown",
+  touchstart: "onTouchStart",
+  touchmove: "onTouchMove",
+  touchend: "onTouchEnd",
+  tap: "onTap"
 };
 
 const eventKeys = Object.keys(eventMapper);
@@ -41,15 +41,14 @@ module.exports = function(modeObject) {
         // handlers that are not present in the mode
         // to reduce on render calls for functions that
         // have no logic
-        eventKeys.forEach((key) => {
+        eventKeys.forEach(key => {
           const modeHandler = eventMapper[key];
           let selector = () => false;
           if (modeObject[modeHandler]) {
             selector = () => true;
           }
-          this.on(key, selector, wrapper(modeHandler));
+          this.on(key, selector, _throttle(wrapper(modeHandler), 40));
         });
-
       },
       stop() {
         mode.onStop(state);

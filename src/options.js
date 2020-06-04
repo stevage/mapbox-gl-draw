@@ -17,8 +17,8 @@ const defaultOptions = {
   snapFeatureFilter: undefined,
   snapDistance: 20,
   snapping: {
-    layers: [],
-  },
+    layers: []
+  }
 };
 
 const showControls = {
@@ -27,7 +27,7 @@ const showControls = {
   polygon: true,
   trash: true,
   combine_features: true,
-  uncombine_features: true,
+  uncombine_features: true
 };
 
 const hideControls = {
@@ -36,21 +36,21 @@ const hideControls = {
   polygon: false,
   trash: false,
   combine_features: false,
-  uncombine_features: false,
+  uncombine_features: false
 };
 
 function addSources(styles, sourceBucket) {
-  return styles.map((style) => {
+  return styles.map(style => {
     if (style.source) return style;
     return xtend(style, {
       id: `${style.id}.${sourceBucket}`,
       source:
-        sourceBucket === "hot" ? Constants.sources.HOT : Constants.sources.COLD,
+        sourceBucket === "hot" ? Constants.sources.HOT : Constants.sources.COLD
     });
   });
 }
 
-module.exports = function (options = {}) {
+module.exports = function(options = {}) {
   let withDefaults = xtend(options);
 
   if (!options.controls) {

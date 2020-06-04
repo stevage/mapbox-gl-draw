@@ -60,7 +60,6 @@
     "eslint-config-mourner": "3.0.0",
     "express": "^4.13.4",
     "mapbox-gl": "^1.6.0",
-    "mapbox-gl-js-mock": "0.28.0",
     "mock-browser": "^0.92.10",
     "nyc": "14.1.1",
     "opener": "^1.4.1",
@@ -82,6 +81,7 @@
     "@turf/turf": "^5.1.6",
     "hat": "0.0.3",
     "lodash.isequal": "^4.2.0",
+    "lodash.throttle": "^4.1.1",
     "xtend": "^4.0.1"
   }
 }

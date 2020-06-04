@@ -1,23 +1,22 @@
-const isEqual = require('lodash.isequal');
-const normalize = require('@mapbox/geojson-normalize');
-const hat = require('hat');
-const featuresAt = require('./lib/features_at');
-const stringSetsAreEqual = require('./lib/string_sets_are_equal');
-const geojsonhint = require('@mapbox/geojsonhint');
-const Constants = require('./constants');
-const StringSet = require('./lib/string_set');
+const isEqual = require("lodash.isequal");
+const normalize = require("@mapbox/geojson-normalize");
+const hat = require("hat");
+const featuresAt = require("./lib/features_at");
+const stringSetsAreEqual = require("./lib/string_sets_are_equal");
+const geojsonhint = require("@mapbox/geojsonhint");
+const Constants = require("./constants");
+const StringSet = require("./lib/string_set");
 
 const featureTypes = {
-  Polygon: require('./feature_types/polygon'),
-  LineString: require('./feature_types/line_string'),
-  Point: require('./feature_types/point'),
-  MultiPolygon: require('./feature_types/multi_feature'),
-  MultiLineString: require('./feature_types/multi_feature'),
-  MultiPoint: require('./feature_types/multi_feature')
+  Polygon: require("./feature_types/polygon"),
+  LineString: require("./feature_types/line_string"),
+  Point: require("./feature_types/point"),
+  MultiPolygon: require("./feature_types/multi_feature"),
+  MultiLineString: require("./feature_types/multi_feature"),
+  MultiPoint: require("./feature_types/multi_feature")
 };
 
 module.exports = function(ctx, api) {
-
   api.modes = Constants.modes;
 
   api.getFeatureIdsAt = function(point) {
@@ -25,18 +24,21 @@ module.exports = function(ctx, api) {
     return features.map(feature => feature.properties.id);
   };
 
-  api.getSelectedIds = function () {
+  api.getSelectedIds = function() {
     return ctx.store.getSelectedIds();
   };
 
-  api.getSelected = function () {
+  api.getSelected = function() {
     return {
       type: Constants.geojsonTypes.FEATURE_COLLECTION,
-      features: ctx.store.getSelectedIds().map(id => ctx.store.get(id)).map(feature => feature.toGeoJSON())
+      features: ctx.store
+        .getSelectedIds()
+        .map(id => ctx.store.get(id))
+        .map(feature => feature.toGeoJSON())
     };
   };
 
-  api.getSelectedPoints = function () {
+  api.getSelectedPoints = function() {
     return {
       type: Constants.geojsonTypes.FEATURE_COLLECTION,
       features: ctx.store.getSelectedCoordinates().map(coordinate => ({
@@ -51,8 +53,12 @@ module.exports = function(ctx, api) {
   };
 
   api.set = function(featureCollection) {
-    if (featureCollection.type === undefined || featureCollection.type !== Constants.geojsonTypes.FEATURE_COLLECTION || !Array.isArray(featureCollection.features)) {
-      throw new Error('Invalid FeatureCollection');
+    if (
+      featureCollection.type === undefined ||
+      featureCollection.type !== Constants.geojsonTypes.FEATURE_COLLECTION ||
+      !Array.isArray(featureCollection.features)
+    ) {
+      throw new Error("Invalid FeatureCollection");
     }
     const renderBatch = ctx.store.createRenderBatch();
     let toDelete = ctx.store.getAllIds().slice();
@@ -68,21 +74,29 @@ module.exports = function(ctx, api) {
     return newIds;
   };
 
-  api.add = function (geojson) {
-    const errors = geojsonhint.hint(geojson, { precisionWarning: false }).filter(e => e.level !== 'message');
+  api.add = function(geojson) {
+    const errors = geojsonhint
+      .hint(geojson, { precisionWarning: false })
+      .filter(e => e.level !== "message");
     if (errors.length) {
       throw new Error(errors[0].message);
     }
     const featureCollection = JSON.parse(JSON.stringify(normalize(geojson)));
 
-    const ids = featureCollection.features.map((feature) => {
-      feature.id = feature.id || hat();
+    const ids = featureCollection.features.map(feature => {
+      feature.id =
+        feature.id ||
+        (feature["x-vetro"] && feature["x-vetro"].vetroId) ||
+        hat();
 
       if (feature.geometry === null) {
-        throw new Error('Invalid geometry: null');
+        throw new Error("Invalid geometry: null");
       }
 
-      if (ctx.store.get(feature.id) === undefined || ctx.store.get(feature.id).type !== feature.geometry.type) {
+      if (
+        ctx.store.get(feature.id) === undefined ||
+        ctx.store.get(feature.id).type !== feature.geometry.type
+      ) {
         // If the feature has not yet been created ...
         const Model = featureTypes[feature.geometry.type];
         if (Model === undefined) {
@@ -94,7 +108,12 @@ module.exports = function(ctx, api) {
         // If a feature of that id has already been created, and we are swapping it out ...
         const internalFeature = ctx.store.get(feature.id);
         internalFeature.properties = feature.properties;
-        if (!isEqual(internalFeature.getCoordinates(), feature.geometry.coordinates)) {
+        if (
+          !isEqual(
+            internalFeature.getCoordinates(),
+            feature.geometry.coordinates
+          )
+        ) {
           internalFeature.incomingCoords(feature.geometry.coordinates);
         }
       }
@@ -105,8 +124,7 @@ module.exports = function(ctx, api) {
     return ids;
   };
 
-
-  api.get = function (id) {
+  api.get = function(id) {
     const feature = ctx.store.get(id);
     if (feature) {
       return feature.toGeoJSON();
@@ -124,8 +142,13 @@ module.exports = function(ctx, api) {
     ctx.store.delete(featureIds, { silent: true });
     // If we were in direct select mode and our selected feature no longer exists
     // (because it was deleted), we need to get out of that mode.
-    if (api.getMode() === Constants.modes.DIRECT_SELECT && !ctx.store.getSelectedIds().length) {
-      ctx.events.changeMode(Constants.modes.SIMPLE_SELECT, undefined, { silent: true });
+    if (
+      api.getMode() === Constants.modes.DIRECT_SELECT &&
+      !ctx.store.getSelectedIds().length
+    ) {
+      ctx.events.changeMode(Constants.modes.SIMPLE_SELECT, undefined, {
+        silent: true
+      });
     } else {
       ctx.store.render();
     }
@@ -138,7 +161,9 @@ module.exports = function(ctx, api) {
     // If we were in direct select mode, now our selected feature no longer exists,
     // so escape that mode.
     if (api.getMode() === Constants.modes.DIRECT_SELECT) {
-      ctx.events.changeMode(Constants.modes.SIMPLE_SELECT, undefined, { silent: true });
+      ctx.events.changeMode(Constants.modes.SIMPLE_SELECT, undefined, {
+        silent: true
+      });
     } else {
       ctx.store.render();
     }
@@ -148,8 +173,17 @@ module.exports = function(ctx, api) {
 
   api.changeMode = function(mode, modeOptions = {}) {
     // Avoid changing modes just to re-select what's already selected
-    if (mode === Constants.modes.SIMPLE_SELECT && api.getMode() === Constants.modes.SIMPLE_SELECT) {
-      if (stringSetsAreEqual((modeOptions.featureIds || []), ctx.store.getSelectedIds())) return api;
+    if (
+      mode === Constants.modes.SIMPLE_SELECT &&
+      api.getMode() === Constants.modes.SIMPLE_SELECT
+    ) {
+      if (
+        stringSetsAreEqual(
+          modeOptions.featureIds || [],
+          ctx.store.getSelectedIds()
+        )
+      )
+        return api;
       // And if we are changing the selection within simple_select mode, just change the selection,
       // instead of stopping and re-starting the mode
       ctx.store.setSelected(modeOptions.featureIds, { silent: true });
@@ -157,8 +191,11 @@ module.exports = function(ctx, api) {
       return api;
     }
 
-    if (mode === Constants.modes.DIRECT_SELECT && api.getMode() === Constants.modes.DIRECT_SELECT &&
-      modeOptions.featureId === ctx.store.getSelectedIds()[0]) {
+    if (
+      mode === Constants.modes.DIRECT_SELECT &&
+      api.getMode() === Constants.modes.DIRECT_SELECT &&
+      modeOptions.featureId === ctx.store.getSelectedIds()[0]
+    ) {
       return api;
     }
 
