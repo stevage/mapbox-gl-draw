@@ -76,7 +76,7 @@ class Snapping {
     console.log("snap on");
     this._snappableLayers().forEach(l => this._addSnapBuffer(l));
     this.map.on("mousemove", throttle(this._mouseoverHandler, 100));
-    // this.map.on("mouseout", this._mouseoutHandler);
+    this.map.on("mouseout", this._mouseoutHandler);
     this.map.addSource("_snap_vertex", {
       type: "geojson",
       data: {
@@ -229,8 +229,6 @@ class Snapping {
     );
 
     this.map.addLayer(bufferLayer);
-    // this.map.on("mousemove", bufferLayerId, this._mouseoverHandler);
-    // this.map.on("mouseout", bufferLayerId, this._mouseoutHandler);
   }
 
   _setSnapHoverState(feature, state) {

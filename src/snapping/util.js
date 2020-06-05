@@ -84,5 +84,5 @@ exports.selectedFeatureIsPoint = store => {
 exports.notPointFilter = feature => feature.geometry.type !== "Point";
 
 exports.notSelectedFeatureFilter = store => feature => {
-  return !Object.keys(store._features).includes(feature.properties.vetro_id);
+  return !store._features[feature.properties.vetro_id];
 };
