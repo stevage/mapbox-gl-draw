@@ -179,7 +179,6 @@ module.exports = function(ctx) {
   };
 
   function changeMode(modename, nextModeOptions, eventOptions = {}) {
-    console.log(modename);
     currentMode.stop();
 
     const modebuilder = modes[modename];

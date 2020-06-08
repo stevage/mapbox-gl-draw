@@ -4,7 +4,6 @@ const ui = require("./ui");
 const Constants = require("./constants");
 const xtend = require("xtend");
 const Snapping = require("./snapping/index");
-console.log("t0dfddfdgfgd");
 
 module.exports = function(ctx) {
   let controlContainer = null;

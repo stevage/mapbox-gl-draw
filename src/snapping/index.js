@@ -73,7 +73,6 @@ class Snapping {
   }
 
   enableSnapping() {
-    console.log("snap on");
     this._snappableLayers().forEach(l => this._addSnapBuffer(l));
     this.map.on("mousemove", throttle(this._mouseoverHandler, 100));
     this.map.on("mouseout", this._mouseoutHandler);
@@ -212,8 +211,11 @@ class Snapping {
   }
 
   _addSnapBuffer(layerId) {
-    console.log("snap on ", layerId);
     const bufferLayerId = getBufferLayerId(layerId);
+    const bufferLayerExists = this.map.getLayer(bufferLayerId);
+    if (bufferLayerExists) {
+      return;
+    }
     const layerDef = this.map.getLayer(layerId);
     if (!layerDef) {
       console.error(
@@ -256,11 +258,9 @@ class Snapping {
     const newLayers = this._snappableLayers();
     this.bufferLayers
       .filter(l => newLayers.indexOf(l) < 0)
-      .map(l => (console.log(`Remove snap buffer ${l.id}`), l))
       .forEach(l => this._removeSnapBuffer(l));
     newLayers
       .filter(l => this.bufferLayers.indexOf(l) < 0)
-      .map(l => (console.log(`Add snap buffer ${l.id}`), l))
       .forEach(l => this._addSnapBuffer(l));
     this.bufferLayers = newLayers;
   }

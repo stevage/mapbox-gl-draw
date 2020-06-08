@@ -69,7 +69,6 @@ DrawLineString.onSetup = function(opts) {
         coordinates: []
       }
     });
-    console.log(line);
     currentVertexPosition = 0;
     this.addFeature(line);
   }

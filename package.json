@@ -57,7 +57,6 @@
     "browserify-middleware": "^8.1.0",
     "envify": "^4.0.0",
     "eslint": "6.7.2",
-    "eslint-config-mourner": "3.0.0",
     "express": "^4.13.4",
     "mapbox-gl": "^1.6.0",
     "mock-browser": "^0.92.10",
