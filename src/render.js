@@ -1,8 +1,10 @@
-const Constants = require('./constants');
+const Constants = require("./constants");
 
 module.exports = function render() {
   const store = this;
-  const mapExists = store.ctx.map && store.ctx.map.getSource(Constants.sources.HOT) !== undefined;
+  const mapExists =
+    store.ctx.map &&
+    store.ctx.map.getSource(Constants.sources.HOT) !== undefined;
   if (!mapExists) return cleanup();
 
   const mode = store.ctx.events.currentModeName();
@@ -16,24 +18,34 @@ module.exports = function render() {
     newColdIds = store.getAllIds();
   } else {
     newHotIds = store.getChangedIds().filter(id => store.get(id) !== undefined);
-    newColdIds = store.sources.hot.filter(geojson => geojson.properties.id && newHotIds.indexOf(geojson.properties.id) === -1 && store.get(geojson.properties.id) !== undefined).map(geojson => geojson.properties.id);
+    newColdIds = store.sources.hot
+      .filter(
+        geojson =>
+          geojson.properties.id &&
+          newHotIds.indexOf(geojson.properties.id) === -1 &&
+          store.get(geojson.properties.id) !== undefined
+      )
+      .map(geojson => geojson.properties.id);
   }
 
   store.sources.hot = [];
   const lastColdCount = store.sources.cold.length;
-  store.sources.cold = store.isDirty ? [] : store.sources.cold.filter((geojson) => {
-    const id = geojson.properties.id || geojson.properties.parent;
-    return newHotIds.indexOf(id) === -1;
-  });
+  store.sources.cold = store.isDirty
+    ? []
+    : store.sources.cold.filter(geojson => {
+        const id = geojson.properties.id || geojson.properties.parent;
+        return newHotIds.indexOf(id) === -1;
+      });
 
-  const coldChanged = lastColdCount !== store.sources.cold.length || newColdIds.length > 0;
-  newHotIds.forEach(id => renderFeature(id, 'hot'));
-  newColdIds.forEach(id => renderFeature(id, 'cold'));
+  const coldChanged =
+    lastColdCount !== store.sources.cold.length || newColdIds.length > 0;
+  newHotIds.forEach(id => renderFeature(id, "hot"));
+  newColdIds.forEach(id => renderFeature(id, "cold"));
 
   function renderFeature(id, source) {
     const feature = store.get(id);
     const featureInternal = feature.internal(mode);
-    store.ctx.events.currentModeRender(featureInternal, (geojson) => {
+    store.ctx.events.currentModeRender(featureInternal, geojson => {
       store.sources[source].push(geojson);
     });
   }
@@ -66,7 +78,9 @@ module.exports = function render() {
   }
 
   if (store._deletedFeaturesToEmit.length) {
-    const geojsonToEmit = store._deletedFeaturesToEmit.map(feature => feature.toGeoJSON());
+    const geojsonToEmit = store._deletedFeaturesToEmit.map(feature =>
+      feature.toGeoJSON()
+    );
 
     store._deletedFeaturesToEmit = [];
 

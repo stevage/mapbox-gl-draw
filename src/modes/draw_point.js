@@ -1,5 +1,5 @@
-const CommonSelectors = require('../lib/common_selectors');
-const Constants = require('../constants');
+const CommonSelectors = require("../lib/common_selectors");
+const Constants = require("../constants");
 
 const DrawPoint = {};
 
@@ -33,13 +33,15 @@ DrawPoint.stopDrawingAndRemove = function(state) {
 
 DrawPoint.onTap = DrawPoint.onClick = function(state, e) {
   this.updateUIClasses({ mouse: Constants.cursors.MOVE });
-  const lngLat = this._ctx.snapping.snapCoord(e.lngLat);
+  const lngLat = this._ctx.snapping.snapCoord(e);
 
-  state.point.updateCoordinate('', lngLat.lng, lngLat.lat);
+  state.point.updateCoordinate("", lngLat.lng, lngLat.lat);
   this.map.fire(Constants.events.CREATE, {
     features: [state.point.toGeoJSON()]
   });
-  this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.point.id] });
+  this.changeMode(Constants.modes.SIMPLE_SELECT, {
+    featureIds: [state.point.id]
+  });
 };
 
 DrawPoint.onStop = function(state) {
@@ -52,7 +54,9 @@ DrawPoint.onStop = function(state) {
 DrawPoint.toDisplayFeatures = function(state, geojson, display) {
   // Never render the point we're drawing
   const isActivePoint = geojson.properties.id === state.point.id;
-  geojson.properties.active = (isActivePoint) ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
+  geojson.properties.active = isActivePoint
+    ? Constants.activeStates.ACTIVE
+    : Constants.activeStates.INACTIVE;
   if (!isActivePoint) return display(geojson);
 };
 

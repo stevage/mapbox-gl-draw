@@ -1,7 +1,7 @@
-const runSetup = require('./src/setup');
-const setupOptions = require('./src/options');
-const setupAPI = require('./src/api');
-const Constants = require('./src/constants');
+const runSetup = require("./src/setup");
+const setupOptions = require("./src/options");
+const setupAPI = require("./src/api");
+const Constants = require("./src/constants");
 
 const setupDraw = function(options, api) {
   options = setupOptions(options);
@@ -27,4 +27,4 @@ module.exports = function(options) {
   setupDraw(options, this);
 };
 
-module.exports.modes = require('./src/modes');
+module.exports.modes = require("./src/modes");

@@ -3328,11 +3328,6 @@ escodegen@~1.9.0:
   optionalDependencies:
     source-map "~0.6.1"
 
-eslint-config-mourner@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/eslint-config-mourner/-/eslint-config-mourner-3.0.0.tgz#2cb7df3a14889e70409bbc3250ef0373285e7430"
-  integrity sha512-QWMt3Cbqkhg/73fZ2UrTNa/p27nF3JhI1Ej2Jg7qSBri88Y0bg4LFzz0/6I5IrvFR10c6UPwDS+DsV9Ec42aVQ==
-
 eslint-scope@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/eslint-scope/-/eslint-scope-5.0.0.tgz#e87c8887c73e8d1ec84f1ca591645c358bfc8fb9"
