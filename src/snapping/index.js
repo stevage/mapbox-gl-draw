@@ -111,9 +111,9 @@ class Snapping {
       );
     }
 
-    const newSnappedFeature = this.snapFeatureFilter
-      ? snappableFeaturesNearMouse.find(this.snapFeatureFilter)
-      : snappableFeaturesNearMouse[0];
+    const newSnappedFeature = this.snapFeatureFilter ?
+      snappableFeaturesNearMouse.find(this.snapFeatureFilter) :
+      snappableFeaturesNearMouse[0];
 
     if (!newSnappedFeature) {
       this._mouseoutHandler();
@@ -133,9 +133,9 @@ class Snapping {
       }
     }
 
-    const geometry = newSnappedFeature.properties.geojson_string
-      ? JSON.parse(newSnappedFeature.properties.geojson_string)
-      : newSnappedFeature.geometry;
+    const geometry = newSnappedFeature.properties.geojson_string ?
+      JSON.parse(newSnappedFeature.properties.geojson_string) :
+      newSnappedFeature.geometry;
 
     if (geometry.type === "Polygon" || geometry.type === "MultiPolygon") {
       this.snappedGeometry = turf.polygonToLine(geometry).geometry;
