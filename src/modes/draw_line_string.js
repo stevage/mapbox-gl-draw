@@ -78,7 +78,6 @@ DrawLineString.onSetup = function(opts) {
 
   this.clearSelectedFeatures();
   doubleClickZoom.disable(this);
-  this.map.getCanvas().style.cursor = "crosshair";
   // this.updateUIClasses({ mouse: Constants.cursors.ADD });
   this.activateUIButton(Constants.types.LINE);
   this.setActionableState({

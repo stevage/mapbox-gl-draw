@@ -2,7 +2,6 @@ const featuresAt = require("./features_at");
 const Constants = require("../constants");
 
 module.exports = function getFeatureAtAndSetCursors(event, ctx) {
-  console.log("x");
   const features = featuresAt.click(event, null, ctx);
   const classes = { mouse: Constants.cursors.NONE };
 
@@ -19,7 +18,7 @@ module.exports = function getFeatureAtAndSetCursors(event, ctx) {
   }
 
   ctx.ui.queueMapClasses(classes);
-  ctx.ui.updateMapClasses();
+  // ctx.ui.updateMapClasses();
 
   return features[0];
 };
