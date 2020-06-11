@@ -8,8 +8,8 @@ module.exports = [
       ['!=', 'mode', 'static']
     ],
     'paint': {
-      'fill-color': '#3bb2d0',
-      'fill-outline-color': '#3bb2d0',
+      'fill-color': '#fbb03b',
+      'fill-outline-color': '#fbb03b',
       'fill-opacity': 0.1
     }
   },
@@ -60,8 +60,7 @@ module.exports = [
       'line-join': 'round'
     },
     'paint': {
-      'line-color': '#fbb03b',
-      'line-dasharray': [0.2, 2],
+      'line-color': '#3bb2d0',
       'line-width': 2
     }
   },
@@ -78,7 +77,8 @@ module.exports = [
       'line-join': 'round'
     },
     'paint': {
-      'line-color': '#3bb2d0',
+      'line-color': '#fbb03b',
+      'line-dasharray': [0.2, 2],
       'line-width': 2
     }
   },
@@ -136,7 +136,7 @@ module.exports = [
     ],
     'paint': {
       'circle-radius': 5,
-      'circle-opacity': 1,
+      'circle-opacity': 0,
       'circle-color': '#fff'
     }
   },
@@ -150,8 +150,8 @@ module.exports = [
       ['!=', 'mode', 'static']
     ],
     'paint': {
-      'circle-radius': 3,
-      'circle-color': '#3bb2d0'
+      'circle-radius': 5,
+      'circle-color': '#fbb03b'
     }
   },
   {
@@ -186,7 +186,7 @@ module.exports = [
     'paint': {
       'fill-color': '#404040',
       'fill-outline-color': '#404040',
-      'fill-opacity': 0.1
+      'fill-opacity': 0
     }
   },
   {
@@ -199,7 +199,8 @@ module.exports = [
     },
     'paint': {
       'line-color': '#404040',
-      'line-width': 2
+      'line-width': 2,
+      'line-opacity': 0
     }
   },
   {
@@ -212,7 +213,8 @@ module.exports = [
     },
     'paint': {
       'line-color': '#404040',
-      'line-width': 2
+      'line-width': 2,
+      'line-opacity': 0
     }
   },
   {
@@ -221,7 +223,8 @@ module.exports = [
     'filter': ['all', ['==', 'mode', 'static'], ['==', '$type', 'Point']],
     'paint': {
       'circle-radius': 5,
-      'circle-color': '#404040'
+      'circle-color': '#404040',
+      'circle-opacity': 0
     }
   }
 ];
