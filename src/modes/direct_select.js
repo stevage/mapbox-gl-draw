@@ -126,6 +126,9 @@ DirectSelect.clickActiveFeature = function(state) {
 // EXTERNAL FUNCTIONS
 
 DirectSelect.onSetup = function(opts) {
+  if (this._ctx.snapping) {
+    this._ctx.snapping.setSnapToSelected(false);
+  }
   const featureId = opts.featureId;
   const feature = this.getFeature(featureId);
 
@@ -254,7 +257,7 @@ DirectSelect.onDrag = function(state, e) {
 };
 
 DirectSelect.onClick = function(state, e) {
-  if (noTarget(e)) return this.clickNoTarget(state, e);
+  // if (noTarget(e)) return this.clickNoTarget(state, e);
   if (CommonSelectors.isActiveFeature(e))
     return this.clickActiveFeature(state, e);
   if (isInactiveFeature(e)) return this.clickInactive(state, e);
@@ -262,7 +265,7 @@ DirectSelect.onClick = function(state, e) {
 };
 
 DirectSelect.onTap = function(state, e) {
-  if (noTarget(e)) return this.clickNoTarget(state, e);
+  // if (noTarget(e)) return this.clickNoTarget(state, e);
   if (CommonSelectors.isActiveFeature(e))
     return this.clickActiveFeature(state, e);
   if (isInactiveFeature(e)) return this.clickInactive(state, e);

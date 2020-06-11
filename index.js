@@ -16,6 +16,7 @@ const setupDraw = function(options, api) {
   const setup = runSetup(ctx);
 
   api.onAdd = setup.onAdd;
+
   api.onRemove = setup.onRemove;
   api.types = Constants.types;
   api.options = options;

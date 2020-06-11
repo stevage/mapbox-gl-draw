@@ -7,6 +7,9 @@ const createVertex = require("../lib/create_vertex");
 const DrawPolygon = {};
 
 DrawPolygon.onSetup = function() {
+  if (this._ctx.snapping) {
+    this._ctx.snapping.setSnapToSelected(false);
+  }
   const polygon = this.newFeature({
     type: Constants.geojsonTypes.FEATURE,
     properties: {},

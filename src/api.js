@@ -226,6 +226,5 @@ module.exports = function(ctx, api) {
     ctx.store.setFeatureProperty(featureId, property, value);
     return api;
   };
-
   return api;
 };

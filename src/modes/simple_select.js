@@ -9,6 +9,10 @@ const Constants = require("../constants");
 const SimpleSelect = {};
 
 SimpleSelect.onSetup = function(opts) {
+  if (this._ctx.snapping) {
+    this._ctx.snapping.setSnapToSelected(false);
+  }
+
   // turn the opts into state.
   const state = {
     dragMoveLocation: null,

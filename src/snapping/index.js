@@ -20,6 +20,7 @@ class Snapping {
     this.snapFeatureFilter = ctx.options.snapFeatureFilter;
     this.snapDistance = ctx.options.snapDistance;
     this.store = ctx.store;
+    this.snapToSelected = false;
     // this is the amount the endpoints are preferenced as snap points. and is related to the angle between the hover point, the nearest point and the endpoint
     this.vertexPullFactor = Math.sqrt(2);
 
@@ -29,6 +30,8 @@ class Snapping {
     this.setSnapLayers = this.setSnapLayers.bind(this);
     this.setSnapFeatureFilter = this.setSnapFeatureFilter.bind(this);
     this.clearSnapCoord = this.clearSnapCoord.bind(this);
+    this.setSnapToSelected = this.setSnapToSelected.bind(this);
+    this.cursorIsSnapped = this.cursorIsSnapped.bind(this);
 
     this.initialize();
     this.attachApi(ctx);
@@ -51,6 +54,7 @@ class Snapping {
     ctx.api.setSnapLayers = this.setSnapLayers;
     ctx.api.setSnapFeatureFilter = this.setSnapFeatureFilter;
     ctx.api.clearSnapCoord = this.clearSnapCoord;
+    ctx.api.cursorIsSnapped = this.cursorIsSnapped;
   }
 
   refreshSnapLayers() {
@@ -63,6 +67,13 @@ class Snapping {
   }
   setSnapFeatureFilter(snapFeatureFilter) {
     this.snapFeatureFilter = snapFeatureFilter;
+  }
+  setSnapToSelected(shouldSnapToSelected) {
+    this.snapToSelected = shouldSnapToSelected;
+  }
+  cursorIsSnapped() {
+    const source = this.map.getSource("_snap_vertex");
+    return source && source._data.features.length > 0;
   }
 
   clearSnapCoord() {
@@ -78,10 +89,7 @@ class Snapping {
     this.map.on("mouseout", this._mouseoutHandler);
     this.map.addSource("_snap_vertex", {
       type: "geojson",
-      data: {
-        type: "FeatureCollection",
-        features: []
-      }
+      data: { type: "FeatureCollection", features: [] }
     });
     this.map.addLayer({
       id: "_snap_vertex",
@@ -102,7 +110,7 @@ class Snapping {
       .queryRenderedFeatures([x, y], {
         layers: this.bufferLayers.map(l => getBufferLayerId(l))
       })
-      .filter(notSelectedFeatureFilter(this.store));
+      .filter(notSelectedFeatureFilter(this.store, this.snapToSelected));
 
     //  This will prevent Point to Point snapping
     if (selectedFeatureIsPoint(this.store)) {
@@ -154,6 +162,7 @@ class Snapping {
   }
 
   snapCoord({ lngLat }, featureFilter) {
+    console.log("1");
     if (
       this.snappedGeometry &&
       !(featureFilter && !featureFilter(this.snappedFeature))
@@ -177,7 +186,10 @@ class Snapping {
           snapPoint = featureWrapperOnPoint(closeEnoughEnpoint);
         }
       }
-      this.map.getSource("_snap_vertex").setData(snapPoint);
+      this.map
+        .getSource("_snap_vertex")
+        .setData({ type: "FeatureCollection", features: [snapPoint] });
+      this.map.fire("draw.snapped", { snapped: true });
       return {
         lng: snapPoint.geometry.coordinates[0],
         lat: snapPoint.geometry.coordinates[1],
@@ -186,6 +198,8 @@ class Snapping {
       };
     } else {
       this.clearSnapCoord();
+      this.map.fire("draw.snapped", { snapped: false });
+
       return lngLat;
     }
   }

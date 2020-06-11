@@ -9,9 +9,12 @@ const DrawLineString = {};
 DrawLineString.onSetup = function(opts) {
   opts = opts || {};
   const featureId = opts.featureId;
-
   let line, currentVertexPosition;
   let direction = "forward";
+  if (this._ctx.snapping) {
+    this._ctx.snapping.setSnapToSelected(false);
+  }
+
   if (featureId) {
     line = this.getFeature(featureId);
     if (!line) {
@@ -75,7 +78,8 @@ DrawLineString.onSetup = function(opts) {
 
   this.clearSelectedFeatures();
   doubleClickZoom.disable(this);
-  this.updateUIClasses({ mouse: Constants.cursors.ADD });
+  this.map.getCanvas().style.cursor = "crosshair";
+  // this.updateUIClasses({ mouse: Constants.cursors.ADD });
   this.activateUIButton(Constants.types.LINE);
   this.setActionableState({
     trash: true
@@ -105,7 +109,7 @@ DrawLineString.clickAnywhere = function(state, e) {
       featureIds: [state.line.id]
     });
   }
-  this.updateUIClasses({ mouse: Constants.cursors.ADD });
+  // this.updateUIClasses({ mouse: Constants.cursors.ADD });
   const lngLat = this._ctx.snapping.snapCoord(e);
   state.line.updateCoordinate(
     state.currentVertexPosition,

@@ -4,6 +4,9 @@ const Constants = require("../constants");
 const DrawPoint = {};
 
 DrawPoint.onSetup = function() {
+  if (this._ctx.snapping) {
+    this._ctx.snapping.setSnapToSelected(false);
+  }
   const point = this.newFeature({
     type: Constants.geojsonTypes.FEATURE,
     properties: {},
@@ -16,7 +19,7 @@ DrawPoint.onSetup = function() {
   this.addFeature(point);
 
   this.clearSelectedFeatures();
-  this.updateUIClasses({ mouse: Constants.cursors.ADD });
+  // this.updateUIClasses({ mouse: Constants.cursors.ADD });
   this.activateUIButton(Constants.types.POINT);
 
   this.setActionableState({
