@@ -242,7 +242,6 @@ class Snapping {
       layerDef,
       this.snapDistance
     );
-    console.log(bufferLayer);
     this.map.addLayer(bufferLayer);
   }
 
