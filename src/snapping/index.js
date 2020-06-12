@@ -119,9 +119,9 @@ class Snapping {
       );
     }
 
-    const newSnappedFeature = this.snapFeatureFilter ?
-      snappableFeaturesNearMouse.find(this.snapFeatureFilter) :
-      snappableFeaturesNearMouse[0];
+    const newSnappedFeature = this.snapFeatureFilter
+      ? snappableFeaturesNearMouse.find(this.snapFeatureFilter)
+      : snappableFeaturesNearMouse[0];
 
     if (!newSnappedFeature) {
       this._mouseoutHandler();
@@ -141,9 +141,9 @@ class Snapping {
       }
     }
 
-    const geometry = newSnappedFeature.properties.geojson_string ?
-      JSON.parse(newSnappedFeature.properties.geojson_string) :
-      newSnappedFeature.geometry;
+    const geometry = newSnappedFeature.properties.geojson_string
+      ? JSON.parse(newSnappedFeature.properties.geojson_string)
+      : newSnappedFeature.geometry;
 
     if (geometry.type === "Polygon" || geometry.type === "MultiPolygon") {
       this.snappedGeometry = turf.polygonToLine(geometry).geometry;
@@ -242,7 +242,7 @@ class Snapping {
       layerDef,
       this.snapDistance
     );
-
+    console.log(bufferLayer);
     this.map.addLayer(bufferLayer);
   }
 
@@ -268,14 +268,16 @@ class Snapping {
   }
 
   _updateSnapLayers() {
-    const newLayers = this._snappableLayers();
-    this.bufferLayers
-      .filter(l => newLayers.indexOf(l) < 0)
-      .forEach(l => this._removeSnapBuffer(l));
-    newLayers
-      .filter(l => this.bufferLayers.indexOf(l) < 0)
-      .forEach(l => this._addSnapBuffer(l));
-    this.bufferLayers = newLayers;
+    setTimeout(() => {
+      const newLayers = this._snappableLayers();
+      this.bufferLayers
+        .filter(l => newLayers.indexOf(l) < 0)
+        .forEach(l => this._removeSnapBuffer(l));
+      newLayers
+        .filter(l => this.bufferLayers.indexOf(l) < 0)
+        .forEach(l => this._addSnapBuffer(l));
+      this.bufferLayers = newLayers;
+    });
   }
 }
 
