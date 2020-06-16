@@ -13,7 +13,6 @@ module.exports = function(ctx) {
       // Stop connect attempt in the event that control is removed before map is loaded
       ctx.map.off("load", setup.connect);
       clearInterval(mapLoadedInterval);
-
       setup.removeLayers();
       ctx.store.restoreMapConfig();
       ctx.ui.removeButtons();
