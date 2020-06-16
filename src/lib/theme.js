@@ -8,8 +8,8 @@ module.exports = [
       ['!=', 'mode', 'static']
     ],
     'paint': {
-      'fill-color': '#fbb03b',
-      'fill-outline-color': '#fbb03b',
+      'fill-color': '#FFD300',
+      'fill-outline-color': '#FFD300',
       'fill-opacity': 0.1
     }
   },
@@ -18,8 +18,8 @@ module.exports = [
     'type': 'fill',
     'filter': ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
     'paint': {
-      'fill-color': '#fbb03b',
-      'fill-outline-color': '#fbb03b',
+      'fill-color': '#FFD300',
+      'fill-outline-color': '#FFD300',
       'fill-opacity': 0.1
     }
   },
@@ -31,7 +31,7 @@ module.exports = [
       ['==', 'meta', 'midpoint']],
     'paint': {
       'circle-radius': 3,
-      'circle-color': '#fbb03b'
+      'circle-color': '#FFD300'
     }
   },
   {
@@ -47,8 +47,9 @@ module.exports = [
       'line-join': 'round'
     },
     'paint': {
-      'line-color': '#3bb2d0',
-      'line-width': 2
+      'line-color': '#FFD300',
+      'line-width': 5,
+      'line-opacity': 0.7
     }
   },
   {
@@ -60,8 +61,9 @@ module.exports = [
       'line-join': 'round'
     },
     'paint': {
-      'line-color': '#3bb2d0',
-      'line-width': 2
+      'line-color': '#FFD300',
+      'line-width': 5,
+      'line-opacity': 0.7
     }
   },
   {
@@ -77,9 +79,9 @@ module.exports = [
       'line-join': 'round'
     },
     'paint': {
-      'line-color': '#fbb03b',
-      'line-dasharray': [0.2, 2],
-      'line-width': 2
+      'line-color': '#FFD300',
+      'line-width': 5,
+      'line-opacity': 0.7
     }
   },
   {
@@ -94,9 +96,9 @@ module.exports = [
       'line-join': 'round'
     },
     'paint': {
-      'line-color': '#fbb03b',
-      'line-dasharray': [0.2, 2],
-      'line-width': 2
+      'line-color': '#FFD300',
+      'line-width': 5,
+      'line-opacity': 0.7
     }
   },
   {
@@ -108,8 +110,8 @@ module.exports = [
       ['!=', 'mode', 'static']
     ],
     'paint': {
-      'circle-radius': 5,
-      'circle-color': '#fff'
+      'circle-radius': 10,
+      'circle-color': '#F9E29C'
     }
   },
   {
@@ -122,7 +124,7 @@ module.exports = [
     ],
     'paint': {
       'circle-radius': 3,
-      'circle-color': '#fbb03b'
+      'circle-color': '#FFD300'
     }
   },
   {
@@ -151,7 +153,7 @@ module.exports = [
     ],
     'paint': {
       'circle-radius': 5,
-      'circle-color': '#fbb03b'
+      'circle-color': '#FFD300'
     }
   },
   {
@@ -163,8 +165,8 @@ module.exports = [
       ['!=', 'meta', 'midpoint']
     ],
     'paint': {
-      'circle-radius': 7,
-      'circle-color': '#fff'
+      'circle-radius': 10,
+      'circle-color': '#F9E29C'
     }
   },
   {
@@ -176,7 +178,7 @@ module.exports = [
       ['==', 'active', 'true']],
     'paint': {
       'circle-radius': 5,
-      'circle-color': '#fbb03b'
+      'circle-color': '#FFD300'
     }
   },
   {
@@ -199,7 +201,7 @@ module.exports = [
     },
     'paint': {
       'line-color': '#404040',
-      'line-width': 2,
+      'line-width': 5,
       'line-opacity': 0
     }
   },
@@ -213,7 +215,7 @@ module.exports = [
     },
     'paint': {
       'line-color': '#404040',
-      'line-width': 2,
+      'line-width': 5,
       'line-opacity': 0
     }
   },
