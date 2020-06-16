@@ -24,17 +24,6 @@ module.exports = [
     }
   },
   {
-    'id': 'gl-draw-polygon-midpoint',
-    'type': 'circle',
-    'filter': ['all',
-      ['==', '$type', 'Point'],
-      ['==', 'meta', 'midpoint']],
-    'paint': {
-      'circle-radius': 3,
-      'circle-color': '#FFD300'
-    }
-  },
-  {
     'id': 'gl-draw-polygon-stroke-inactive',
     'type': 'line',
     'filter': ['all',
@@ -110,8 +99,9 @@ module.exports = [
       ['!=', 'mode', 'static']
     ],
     'paint': {
-      'circle-radius': 10,
-      'circle-color': '#F9E29C'
+      'circle-radius': 1,
+      'circle-color': '#F9E29C',
+      'circle-opacity': 0,
     }
   },
   {
@@ -123,8 +113,9 @@ module.exports = [
       ['!=', 'mode', 'static']
     ],
     'paint': {
-      'circle-radius': 3,
-      'circle-color': '#FFD300'
+      'circle-radius': 7,
+      'circle-color': '#FFF',
+      'circle-opacity': 0.8,
     }
   },
   {
@@ -228,5 +219,17 @@ module.exports = [
       'circle-color': '#404040',
       'circle-opacity': 0
     }
-  }
+  },
+  {
+    'id': 'gl-draw-polygon-midpoint',
+    'type': 'circle',
+    'filter': ['all',
+      ['==', '$type', 'Point'],
+      ['==', 'meta', 'midpoint']],
+    'paint': {
+      'circle-radius': 7,
+      'circle-color': '#FFF',
+      'circle-opacity': 0.8,
+    }
+  },
 ];
