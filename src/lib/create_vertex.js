@@ -23,7 +23,7 @@ module.exports = function(parentId, coordinates, path, selected) {
         : Constants.activeStates.INACTIVE
     },
     geometry: {
-      type: Constants.geojsonTypes.LINE_STRING,
+      type: Constants.geojsonTypes.POINT,
       coordinates
     }
   };

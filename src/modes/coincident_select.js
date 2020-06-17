@@ -58,7 +58,6 @@ CoincidentSelect.onSetup = function(opts) {
     )
   );
 
-  //   this.map.on("draw.feature-added", ({ feature }) => {
   const feature = this.getFeature(state.initiallySelectedFeatureIds[0]);
   if (feature.type !== "Point") {
     return;
@@ -96,10 +95,6 @@ CoincidentSelect.onSetup = function(opts) {
         });
       }
     }
-    // });
-    console.log(featIds);
-    // this.setSelected(featIds);
-    console.log(Object.keys(this._ctx.store._features).length);
   });
 
   this.fireActionable();
@@ -118,7 +113,7 @@ CoincidentSelect.fireUpdate = function(coincidentData) {
   const newPointCoords = features[0].geometry.coordinates;
   const formattedCoincidentData = coincidentData.map(
     ({ id, oldGeom, updateIndex, layer_id }) => {
-      const newLineCoords = oldGeom.coordinates;
+      const newLineCoords = [...oldGeom.coordinates];
       newLineCoords.splice(updateIndex, 1, newPointCoords);
       return {
         "x-vetro": { vetro_id: id, layer_id },

@@ -24,7 +24,6 @@ function createSupplementaryPoints(geojson, options = {}, basePath = null) {
           );
         });
       });
-      console.log(supplementaryPoints.length);
     } else {
       // For points, just create a vertex
       supplementaryPoints.push(
