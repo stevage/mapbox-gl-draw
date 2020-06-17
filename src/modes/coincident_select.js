@@ -13,23 +13,28 @@ const pointsEqual = (point1, point2) =>
 
 // OverLoaded function. This is serving both to check if the line is connected to the point
 // and also to return the adjacent point(s) in the line to the connected point
-const adjacentLinePoints = (lineCoords, pointCoord) => {
+const getAdjacentLineData = (lineCoords, pointCoord) => {
   if (pointsEqual(lineCoords[0], pointCoord)) {
-    return [lineCoords[1]];
+    return { index: 0, adjacentPoints: [lineCoords[1]] };
   }
-  for (let i = 0; i < lineCoords.length - 2; i += 1) {
+  for (let i = 1; i < lineCoords.length - 2; i += 1) {
     if (pointsEqual(lineCoords[i], pointCoord)) {
-      return [lineCoords[i - 1], lineCoords[i + 1]];
+      return {
+        index: i,
+        adjacentPoints: [lineCoords[i - 1], lineCoords[i + 1]]
+      };
     }
   }
   if (pointsEqual(lineCoords[lineCoords.length - 1], pointCoord)) {
-    return [lineCoords[lineCoords.length - 2]];
+    return {
+      index: lineCoords.length - 1,
+      adjacentPoints: [lineCoords[lineCoords.length - 2]]
+    };
   }
   return null;
 };
 
 CoincidentSelect.onSetup = function(opts) {
-  console.log("hio");
   if (this._ctx.snapping) {
     this._ctx.snapping.setSnapToSelected(false);
   }
@@ -44,7 +49,7 @@ CoincidentSelect.onSetup = function(opts) {
     dragMoving: false,
     canDragMove: false,
     initiallySelectedFeatureIds: opts.featureIds || [],
-    connectedCoordinates: {}
+    coincidentData: []
   };
 
   this.setSelected(
@@ -55,7 +60,6 @@ CoincidentSelect.onSetup = function(opts) {
 
   //   this.map.on("draw.feature-added", ({ feature }) => {
   const feature = this.getFeature(state.initiallySelectedFeatureIds[0]);
-  console.log(feature);
   if (feature.type !== "Point") {
     return;
   }
@@ -77,12 +81,19 @@ CoincidentSelect.onSetup = function(opts) {
       !f.layer.id.includes("_snap")
     ) {
       const lineGeom = JSON.parse(f.properties.geojson_string);
-      const adjacentPoints = adjacentLinePoints(
+      const adjacentLineData = getAdjacentLineData(
         lineGeom.coordinates,
         feature.coordinates
       );
-      if (adjacentPoints) {
-        state.connectedCoordinates[f.properties.vetro_id] = adjacentPoints;
+      if (adjacentLineData) {
+        const { index, adjacentPoints } = adjacentLineData;
+        state.coincidentData.push({
+          id: f.properties.vetro_id,
+          layer_id: f.properties.layer_id,
+          oldGeom: lineGeom,
+          updateIndex: index,
+          adjacentPoints
+        });
       }
     }
     // });
@@ -102,10 +113,26 @@ CoincidentSelect.onSetup = function(opts) {
   return state;
 };
 
-CoincidentSelect.fireUpdate = function() {
+CoincidentSelect.fireUpdate = function(coincidentData) {
+  const features = this.getSelected().map(f => f.toGeoJSON());
+  const newPointCoords = features[0].geometry.coordinates;
+  const formattedCoincidentData = coincidentData.map(
+    ({ id, oldGeom, updateIndex, layer_id }) => {
+      const newLineCoords = oldGeom.coordinates;
+      newLineCoords.splice(updateIndex, 1, newPointCoords);
+      return {
+        "x-vetro": { vetro_id: id, layer_id },
+        geometry: {
+          ...oldGeom,
+          coordinates: newLineCoords
+        }
+      };
+    }
+  );
   this.map.fire(Constants.events.UPDATE, {
     action: Constants.updateActions.MOVE,
-    features: this.getSelected().map(f => f.toGeoJSON())
+    features,
+    coincidentData: formattedCoincidentData
   });
 };
 
@@ -184,7 +211,7 @@ CoincidentSelect.onMouseMove = function(state) {
 
 CoincidentSelect.onMouseOut = function(state) {
   // As soon as you mouse leaves the canvas, update the feature
-  if (state.dragMoving) return this.fireUpdate();
+  if (state.dragMoving) return this.fireUpdate(state.coincidentData);
 
   // Skip render
   return true;
@@ -361,7 +388,7 @@ CoincidentSelect.dragMove = function(state, e) {
 CoincidentSelect.onMouseUp = function(state, e) {
   // End any extended interactions
   if (state.dragMoving) {
-    this.fireUpdate();
+    this.fireUpdate(state.coincidentData);
   } else if (state.boxSelecting) {
     const bbox = [
       state.boxSelectStartLocation,
@@ -382,14 +409,14 @@ CoincidentSelect.onMouseUp = function(state, e) {
 };
 
 CoincidentSelect.toDisplayFeatures = function(state, geojson, display) {
-  const { connectedCoordinates } = state;
+  const { coincidentData } = state;
   geojson.properties.active = this.isSelected(geojson.properties.id)
     ? Constants.activeStates.ACTIVE
     : Constants.activeStates.INACTIVE;
   display(geojson);
   this.fireActionable();
 
-  createSupplementaryPoints(geojson, { connectedCoordinates }).forEach(display);
+  createSupplementaryPoints(geojson, { coincidentData }).forEach(display);
 };
 
 CoincidentSelect.onTrash = function() {

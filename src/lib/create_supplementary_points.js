@@ -10,8 +10,8 @@ function createSupplementaryPoints(geojson, options = {}, basePath = null) {
   let supplementaryPoints = [];
 
   if (type === Constants.geojsonTypes.POINT) {
-    if (options.connectedCoordinates) {
-      Object.values(options.connectedCoordinates).forEach(adjacentPoints => {
+    if (options.coincidentData && options.coincidentData.length > 0) {
+      options.coincidentData.forEach(({ adjacentPoints }) => {
         adjacentPoints.forEach(adjacentPoint => {
           const lineCoordinates = [geojson.geometry.coordinates, adjacentPoint];
           supplementaryPoints.push(
