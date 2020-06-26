@@ -44,6 +44,9 @@ class Snapping {
     this.map.on("draw.update", () => {
       this.clearSnapCoord();
     });
+    this.map.on("draw.modechange", () => {
+      this.clearSnapCoord();
+    });
   }
 
   /** OUTWARD FACING METHODS */

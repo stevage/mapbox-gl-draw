@@ -17,10 +17,11 @@ DrawPoint.onSetup = function() {
   });
 
   this.addFeature(point);
+  this.setSelected(this._ctx.store.getAllIds()[0]);
 
-  this.clearSelectedFeatures();
+  // this.clearSelectedFeatures();
   // this.updateUIClasses({ mouse: Constants.cursors.ADD });
-  this.activateUIButton(Constants.types.POINT);
+  this.activateUIButton(Constants.types.ADD);
 
   this.setActionableState({
     trash: true

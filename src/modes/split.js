@@ -36,6 +36,7 @@ const clearData = map => {
 
 SplitLine.onSetup = function onSetup({ featureFilter }) {
   this._ctx.snapping.setSnapToSelected(true);
+  clearData(this.map);
   const removeSplitVertecies = () => {
     clearData(this.map);
   };
