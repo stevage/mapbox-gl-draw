@@ -9,6 +9,7 @@ const Constants = require("../constants");
 const SimpleSelect = {};
 
 SimpleSelect.onSetup = function(opts) {
+  // this._ctx.setGetCursorTypeLogic(() => "crosshair");
   if (this._ctx.snapping) {
     this._ctx.snapping.setSnapToSelected(false);
   }

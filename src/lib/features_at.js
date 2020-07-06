@@ -1,7 +1,7 @@
-const sortFeatures = require('./sort_features');
-const mapEventToBoundingBox = require('./map_event_to_bounding_box');
-const Constants = require('../constants');
-const StringSet = require('./string_set');
+const sortFeatures = require("./sort_features");
+const mapEventToBoundingBox = require("./map_event_to_bounding_box");
+const Constants = require("../constants");
+const StringSet = require("./string_set");
 
 const META_TYPES = [
   Constants.meta.FEATURE,
@@ -12,7 +12,8 @@ const META_TYPES = [
 // Requires either event or bbox
 module.exports = {
   click: featuresAtClick,
-  touch: featuresAtTouch
+  touch: featuresAtTouch,
+  any: anyFeaturesAt
 };
 
 function featuresAtClick(event, bbox, ctx) {
@@ -23,20 +24,31 @@ function featuresAtTouch(event, bbox, ctx) {
   return featuresAt(event, bbox, ctx, ctx.options.touchBuffer);
 }
 
+function anyFeaturesAt(event, bbox, ctx) {
+  const box = event
+    ? mapEventToBoundingBox(event, ctx.options.clickBuffer)
+    : bbox;
+  return ctx.map
+    .queryRenderedFeatures(box)
+    .filter(l => l.layer.id.includes("mapbox-layer"));
+}
+
 function featuresAt(event, bbox, ctx, buffer) {
   if (ctx.map === null) return [];
 
-  const box = (event) ? mapEventToBoundingBox(event, buffer) : bbox;
+  const box = event ? mapEventToBoundingBox(event, buffer) : bbox;
 
   const queryParams = {};
-  if (ctx.options.styles) queryParams.layers = ctx.options.styles.map(s => s.id);
+  if (ctx.options.styles)
+    queryParams.layers = ctx.options.styles.map(s => s.id);
 
-  const features = ctx.map.queryRenderedFeatures(box, queryParams)
+  const features = ctx.map
+    .queryRenderedFeatures(box, queryParams)
     .filter(feature => META_TYPES.indexOf(feature.properties.meta) !== -1);
 
   const featureIds = new StringSet();
   const uniqueFeatures = [];
-  features.forEach((feature) => {
+  features.forEach(feature => {
     const featureId = feature.properties.id;
     if (featureIds.has(featureId)) return;
     featureIds.add(featureId);

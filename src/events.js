@@ -1,5 +1,8 @@
+const throttle = require("lodash.throttle");
+
 const setupModeHandler = require("./lib/mode_handler");
 const getFeaturesAndSetCursor = require("./lib/get_features_and_set_cursor");
+const CursorManager = require("./lib/cursor");
 const featuresAt = require("./lib/features_at");
 const isClick = require("./lib/is_click");
 const isTap = require("./lib/is_tap");
@@ -11,7 +14,7 @@ module.exports = function(ctx) {
     m[k] = objectToMode(ctx.options.modes[k]);
     return m;
   }, {});
-
+  const CM = new CursorManager(ctx);
   let mouseDownInfo = {};
   let touchStartInfo = {};
   const events = {};
@@ -25,7 +28,9 @@ module.exports = function(ctx) {
         time: new Date().getTime()
       })
     ) {
-      ctx.ui.queueMapClasses({ mouse: Constants.cursors.DRAG });
+      CM.setCursor(event, "drag");
+
+      // ctx.ui.queueMapClasses({ mouse: Constants.cursors.DRAG });
       currentMode.drag(event);
     } else {
       event.originalEvent.stopPropagation();
@@ -48,7 +53,7 @@ module.exports = function(ctx) {
     if (button === 1) {
       return events.mousedrag(event);
     }
-    const target = getFeaturesAndSetCursor(event, ctx);
+    const target = CM.setCursor(event);
     event.featureTarget = target;
     currentMode.mousemove(event);
   };
@@ -58,13 +63,13 @@ module.exports = function(ctx) {
       time: new Date().getTime(),
       point: event.point
     };
-    const target = getFeaturesAndSetCursor(event, ctx);
+    const target = CM.setCursor(event);
     event.featureTarget = target;
     currentMode.mousedown(event);
   };
 
   events.mouseup = function(event) {
-    const target = getFeaturesAndSetCursor(event, ctx);
+    const target = CM.setCursor(event);
     event.featureTarget = target;
 
     if (
@@ -232,12 +237,12 @@ module.exports = function(ctx) {
       }
     },
     addEventListeners() {
-      ctx.map.on("mousemove", events.mousemove);
+      ctx.map.on("mousemove", throttle(events.mousemove, 40));
       ctx.map.on("mousedown", events.mousedown);
       ctx.map.on("mouseup", events.mouseup);
       ctx.map.on("data", events.data);
 
-      ctx.map.on("touchmove", events.touchmove);
+      ctx.map.on("touchmove", throttle(events.touchmove), 40);
       ctx.map.on("touchstart", events.touchstart);
       ctx.map.on("touchend", events.touchend);
 
