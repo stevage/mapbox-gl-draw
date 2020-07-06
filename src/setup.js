@@ -101,7 +101,6 @@ module.exports = function(ctx) {
         },
         type: "geojson"
       });
-
       ctx.options.styles.forEach(style => {
         ctx.map.addLayer(style);
       });

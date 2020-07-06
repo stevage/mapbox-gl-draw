@@ -1,3 +1,5 @@
+const cursors = require("../constants").cursors;
+
 const SplitLine = {};
 
 const appendData = (map, coordinates) => {
@@ -40,13 +42,17 @@ SplitLine.onSetup = function onSetup({ featureFilter }) {
   const removeSplitVertecies = () => {
     clearData(this.map);
   };
-  const changeCursor = ({ snapped }) => {
+
+  this._ctx.setGetCursorTypeLogic(({ snapped, overFeatures }) => {
     if (snapped) {
-      this.map.getCanvas().style.cursor = "crosshair";
+      return cursors.ADD;
+    } else if (overFeatures) {
+      return cursors.POINTER;
     } else {
-      this.map.getCanvas().style.cursor = null;
+      return cursors.GRAB;
     }
-  };
+  });
+
   this._ctx.api.removeSplitVertecies = removeSplitVertecies;
   if (!this.map.getSource("_split_vertecies")) {
     this._ctx.map.addSource("_split_vertecies", {
@@ -70,7 +76,6 @@ SplitLine.onSetup = function onSetup({ featureFilter }) {
       }
     });
   }
-  this.map.on("draw.snapped", changeCursor);
 
   setTimeout(() => {
     this.map.on("draw.modechange", ({ mode }) => {
@@ -82,7 +87,6 @@ SplitLine.onSetup = function onSetup({ featureFilter }) {
         if (this.map.getSource("_split_vertecies")) {
           this.map.removeSource("_split_vertecies");
         }
-        this.map.off("draw.snapped", changeCursor);
         this.map.getCanvas().style.cursor = null;
       }
     });

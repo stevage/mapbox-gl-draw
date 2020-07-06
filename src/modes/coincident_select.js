@@ -5,6 +5,7 @@ const StringSet = require("../lib/string_set");
 const doubleClickZoom = require("../lib/double_click_zoom");
 const moveFeatures = require("../lib/move_features");
 const Constants = require("../constants");
+const cursors = Constants.cursors
 
 const CoincidentSelect = {};
 
@@ -51,6 +52,15 @@ CoincidentSelect.onSetup = function(opts) {
     initiallySelectedFeatureIds: opts.featureIds || [],
     coincidentData: []
   };
+
+  this._ctx.setGetCursorTypeLogic(({ overFeatures, isOverSelected }) => {
+    if (isOverSelected) {
+      return cursors.GRAB;
+    } else if (overFeatures) {
+      return cursors.POINTER;
+    }
+    return cursors.GRAB;
+  });
 
   this.setSelected(
     state.initiallySelectedFeatureIds.filter(
@@ -238,7 +248,6 @@ CoincidentSelect.clickOnVertex = function(state, e) {
     coordPath: e.featureTarget.properties.coord_path,
     startPos: e.lngLat
   });
-  this.updateUIClasses({ mouse: Constants.cursors.MOVE });
 };
 
 CoincidentSelect.startOnActiveFeature = function(state, e) {
@@ -282,7 +291,6 @@ CoincidentSelect.clickOnFeature = function(state, e) {
   if (isFeatureSelected && isShiftClick) {
     // Deselect it
     this.deselect(featureId);
-    this.updateUIClasses({ mouse: Constants.cursors.POINTER });
     if (selectedFeatureIds.length === 1) {
       doubleClickZoom.enable(this);
     }
@@ -290,14 +298,12 @@ CoincidentSelect.clickOnFeature = function(state, e) {
   } else if (!isFeatureSelected && isShiftClick) {
     // Add it to the selection
     this.select(featureId);
-    this.updateUIClasses({ mouse: Constants.cursors.MOVE });
     // Click (without shift) on an unselected feature
   } else if (!isFeatureSelected && !isShiftClick) {
     // Make it the only selected feature
     selectedFeatureIds.forEach(id => this.doRender(id));
 
     this.setSelected(featureId);
-    this.updateUIClasses({ mouse: Constants.cursors.MOVE });
   }
 
   // No matter what, re-render the clicked feature
@@ -335,7 +341,6 @@ CoincidentSelect.onDrag = function(state, e) {
 
 CoincidentSelect.whileBoxSelect = function(state, e) {
   state.boxSelecting = true;
-  this.updateUIClasses({ mouse: Constants.cursors.ADD });
 
   // Create the box node if it doesn't exist
   if (!state.boxSelectElement) {
@@ -397,7 +402,6 @@ CoincidentSelect.onMouseUp = function(state, e) {
     if (idsToSelect.length) {
       this.select(idsToSelect);
       idsToSelect.forEach(id => this.doRender(id));
-      this.updateUIClasses({ mouse: Constants.cursors.MOVE });
     }
   }
   this.stopExtendedInteractions(state);

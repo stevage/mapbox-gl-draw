@@ -1,5 +1,6 @@
 const CommonSelectors = require("../lib/common_selectors");
 const Constants = require("../constants");
+const cursors = Constants.cursors;
 
 const DrawPoint = {};
 
@@ -7,6 +8,15 @@ DrawPoint.onSetup = function() {
   if (this._ctx.snapping) {
     this._ctx.snapping.setSnapToSelected(false);
   }
+
+  this._ctx.setGetCursorTypeLogic(({ snapped, overFeatures }) => {
+    if (snapped) {
+      return cursors.ADD;
+    } else {
+      return cursors.POINTER;
+    }
+  });
+
   const point = this.newFeature({
     type: Constants.geojsonTypes.FEATURE,
     properties: {},
@@ -54,6 +64,10 @@ DrawPoint.onStop = function(state) {
     this.deleteFeature([state.point.id], { silent: true });
   }
 };
+
+DrawPoint.onMouseMove = function (state, e) {
+  this._ctx.snapping.snapCoord(e);
+}
 
 DrawPoint.toDisplayFeatures = function(state, geojson, display) {
   // Never render the point we're drawing

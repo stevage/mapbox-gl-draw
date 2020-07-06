@@ -50,7 +50,6 @@ module.exports = function(ctx) {
     if (classesToAdd.length > 0) {
       ctx.container.classList.add(...classesToAdd);
     }
-
     currentMapClasses = xtend(currentMapClasses, nextMapClasses);
   }
 

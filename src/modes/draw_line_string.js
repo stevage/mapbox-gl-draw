@@ -3,10 +3,11 @@ const isEventAtCoordinates = require("../lib/is_event_at_coordinates");
 const doubleClickZoom = require("../lib/double_click_zoom");
 const Constants = require("../constants");
 const createVertex = require("../lib/create_vertex");
+const cursors = require("../constants").cursors;
 
 const DrawLineString = {};
 
-DrawLineString.onSetup = function(opts) {
+DrawLineString.onSetup = function (opts) {
   opts = opts || {};
   const featureId = opts.featureId;
   let line, currentVertexPosition;
@@ -14,6 +15,14 @@ DrawLineString.onSetup = function(opts) {
   if (this._ctx.snapping) {
     this._ctx.snapping.setSnapToSelected(false);
   }
+
+  this._ctx.setGetCursorTypeLogic(({ snapped, overFeatures }) => {
+    if (snapped) {
+      return cursors.ADD;
+    } else {
+      return cursors.POINTER;
+    }
+  });
 
   if (featureId) {
     line = this.getFeature(featureId);
@@ -91,7 +100,7 @@ DrawLineString.onSetup = function(opts) {
   };
 };
 
-DrawLineString.clickAnywhere = function(state, e) {
+DrawLineString.clickAnywhere = function (state, e) {
   if (
     (state.currentVertexPosition > 0 &&
       isEventAtCoordinates(
@@ -127,13 +136,13 @@ DrawLineString.clickAnywhere = function(state, e) {
   }
 };
 
-DrawLineString.clickOnVertex = function(state) {
+DrawLineString.clickOnVertex = function (state) {
   return this.changeMode(Constants.modes.SIMPLE_SELECT, {
     featureIds: [state.line.id]
   });
 };
 
-DrawLineString.onMouseMove = function(state, e) {
+DrawLineString.onMouseMove = function (state, e) {
   const lngLat = this._ctx.snapping.snapCoord(e);
   state.line.updateCoordinate(
     state.currentVertexPosition,
@@ -145,12 +154,12 @@ DrawLineString.onMouseMove = function(state, e) {
   }
 };
 
-DrawLineString.onTap = DrawLineString.onClick = function(state, e) {
+DrawLineString.onTap = DrawLineString.onClick = function (state, e) {
   if (CommonSelectors.isVertex(e)) return this.clickOnVertex(state, e);
   this.clickAnywhere(state, e);
 };
 
-DrawLineString.onKeyUp = function(state, e) {
+DrawLineString.onKeyUp = function (state, e) {
   if (CommonSelectors.isEnterKey(e)) {
     this.changeMode(Constants.modes.SIMPLE_SELECT, {
       featureIds: [state.line.id]
@@ -161,7 +170,7 @@ DrawLineString.onKeyUp = function(state, e) {
   }
 };
 
-DrawLineString.onStop = function(state) {
+DrawLineString.onStop = function (state) {
   doubleClickZoom.enable(this);
   this.activateUIButton();
 
@@ -180,12 +189,12 @@ DrawLineString.onStop = function(state) {
   }
 };
 
-DrawLineString.onTrash = function(state) {
+DrawLineString.onTrash = function (state) {
   this.deleteFeature([state.line.id], { silent: true });
   this.changeMode(Constants.modes.SIMPLE_SELECT);
 };
 
-DrawLineString.toDisplayFeatures = function(state, geojson, display) {
+DrawLineString.toDisplayFeatures = function (state, geojson, display) {
   const isActiveLine = geojson.properties.id === state.line.id;
   geojson.properties.active = isActiveLine
     ? Constants.activeStates.ACTIVE
@@ -198,14 +207,14 @@ DrawLineString.toDisplayFeatures = function(state, geojson, display) {
     createVertex(
       state.line.id,
       geojson.geometry.coordinates[
-        state.direction === "forward"
-          ? geojson.geometry.coordinates.length - 2
-          : 1
+      state.direction === "forward"
+        ? geojson.geometry.coordinates.length - 2
+        : 1
       ],
       `${
-        state.direction === "forward"
-          ? geojson.geometry.coordinates.length - 2
-          : 1
+      state.direction === "forward"
+        ? geojson.geometry.coordinates.length - 2
+        : 1
       }`,
       false
     )
