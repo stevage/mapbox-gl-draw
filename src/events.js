@@ -9,7 +9,7 @@ const isTap = require("./lib/is_tap");
 const Constants = require("./constants");
 const objectToMode = require("./modes/object_to_mode");
 
-module.exports = function(ctx) {
+module.exports = function (ctx) {
   const modes = Object.keys(ctx.options.modes).reduce((m, k) => {
     m[k] = objectToMode(ctx.options.modes[k]);
     return m;
@@ -21,7 +21,7 @@ module.exports = function(ctx) {
   let currentModeName = null;
   let currentMode = null;
 
-  events.drag = function(event, isDrag) {
+  events.drag = function (event, isDrag) {
     if (
       isDrag({
         point: event.point,
@@ -37,15 +37,15 @@ module.exports = function(ctx) {
     }
   };
 
-  events.mousedrag = function(event) {
+  events.mousedrag = function (event) {
     events.drag(event, endInfo => !isClick(mouseDownInfo, endInfo));
   };
 
-  events.touchdrag = function(event) {
+  events.touchdrag = function (event) {
     events.drag(event, endInfo => !isTap(touchStartInfo, endInfo));
   };
 
-  events.mousemove = function(event) {
+  events.mousemove = function (event) {
     const button =
       event.originalEvent.buttons !== undefined
         ? event.originalEvent.buttons
@@ -53,23 +53,24 @@ module.exports = function(ctx) {
     if (button === 1) {
       return events.mousedrag(event);
     }
-    const target = CM.setCursor(event);
+    const target = CM.setCursor(event, 'mousemove');
     event.featureTarget = target;
     currentMode.mousemove(event);
   };
 
-  events.mousedown = function(event) {
+  events.mousedown = function (event) {
     mouseDownInfo = {
       time: new Date().getTime(),
       point: event.point
     };
-    const target = CM.setCursor(event);
+    const target = CM.setCursor(event, 'mousedown');
+
     event.featureTarget = target;
     currentMode.mousedown(event);
   };
 
-  events.mouseup = function(event) {
-    const target = CM.setCursor(event);
+  events.mouseup = function (event) {
+    const target = CM.setCursor(event, 'mouseup');
     event.featureTarget = target;
 
     if (
@@ -84,11 +85,11 @@ module.exports = function(ctx) {
     }
   };
 
-  events.mouseout = function(event) {
+  events.mouseout = function (event) {
     currentMode.mouseout(event);
   };
 
-  events.touchstart = function(event) {
+  events.touchstart = function (event) {
     // Prevent emulated mouse events because we will fully handle the touch here.
     // This does not stop the touch events from propogating to mapbox though.
     event.originalEvent.preventDefault();
@@ -105,7 +106,7 @@ module.exports = function(ctx) {
     currentMode.touchstart(event);
   };
 
-  events.touchmove = function(event) {
+  events.touchmove = function (event) {
     event.originalEvent.preventDefault();
     if (!ctx.options.touchEnabled) {
       return;
@@ -115,7 +116,7 @@ module.exports = function(ctx) {
     return events.touchdrag(event);
   };
 
-  events.touchend = function(event) {
+  events.touchend = function (event) {
     event.originalEvent.preventDefault();
     if (!ctx.options.touchEnabled) {
       return;
@@ -140,7 +141,7 @@ module.exports = function(ctx) {
   const isKeyModeValid = code =>
     !(code === 8 || code === 46 || (code >= 48 && code <= 57));
 
-  events.keydown = function(event) {
+  events.keydown = function (event) {
     if ((event.srcElement || event.target).classList[0] !== "mapboxgl-canvas")
       return; // we only handle events on the map
 
@@ -161,17 +162,17 @@ module.exports = function(ctx) {
     }
   };
 
-  events.keyup = function(event) {
+  events.keyup = function (event) {
     if (isKeyModeValid(event.keyCode)) {
       currentMode.keyup(event);
     }
   };
 
-  events.zoomend = function() {
+  events.zoomend = function () {
     ctx.store.changeZoom();
   };
 
-  events.data = function(event) {
+  events.data = function (event) {
     if (event.dataType === "style") {
       const { setup, map, options, store } = ctx;
       const hasLayers = options.styles.some(style => map.getLayer(style.id));

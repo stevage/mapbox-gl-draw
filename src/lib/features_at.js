@@ -30,7 +30,7 @@ function anyFeaturesAt(event, bbox, ctx) {
     : bbox;
   return ctx.map
     .queryRenderedFeatures(box)
-    .filter(l => l.layer.id.includes("mapbox-layer"));
+    .filter(l => l.layer.id.includes("mapbox-layer") || l.layer.id.includes("gl-draw"));
 }
 
 function featuresAt(event, bbox, ctx, buffer) {

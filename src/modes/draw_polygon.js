@@ -3,6 +3,8 @@ const doubleClickZoom = require("../lib/double_click_zoom");
 const Constants = require("../constants");
 const isEventAtCoordinates = require("../lib/is_event_at_coordinates");
 const createVertex = require("../lib/create_vertex");
+const cursors = Constants.cursors;
+
 
 const DrawPolygon = {};
 
@@ -10,6 +12,15 @@ DrawPolygon.onSetup = function() {
   if (this._ctx.snapping) {
     this._ctx.snapping.setSnapToSelected(false);
   }
+
+  this._ctx.setGetCursorTypeLogic(({ snapped }) => {
+    if (snapped) {
+      return cursors.ADD;
+    } else {
+      return cursors.POINTER;
+    }
+  });
+
   const polygon = this.newFeature({
     type: Constants.geojsonTypes.FEATURE,
     properties: {},

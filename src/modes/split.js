@@ -42,15 +42,17 @@ SplitLine.onSetup = function onSetup({ featureFilter }) {
   const removeSplitVertecies = () => {
     clearData(this.map);
   };
-  this._ctx.setGetCursorTypeLogic(({ snapped, isOverAny }) => {
+
+  this._ctx.setGetCursorTypeLogic(({ snapped, overFeatures }) => {
     if (snapped) {
       return cursors.ADD;
-    } else if (isOverAny) {
+    } else if (overFeatures) {
       return cursors.POINTER;
     } else {
       return cursors.GRAB;
     }
   });
+
   this._ctx.api.removeSplitVertecies = removeSplitVertecies;
   if (!this.map.getSource("_split_vertecies")) {
     this._ctx.map.addSource("_split_vertecies", {
