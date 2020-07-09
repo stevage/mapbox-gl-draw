@@ -5,7 +5,7 @@ const Constants = require("./constants");
 const xtend = require("xtend");
 const Snapping = require("./snapping/index");
 
-module.exports = function(ctx) {
+module.exports = function (ctx) {
   let controlContainer = null;
   let mapLoadedInterval = null;
   const setup = {
@@ -43,7 +43,7 @@ module.exports = function(ctx) {
         // Monkey patch to resolve breaking change to `fire` introduced by
         // mapbox-gl-js. See mapbox/mapbox-gl-draw/issues/766.
         const _fire = map.fire;
-        map.fire = function(type, event) {
+        map.fire = function (type, event) {
           // eslint-disable-next-line
           let args = arguments;
 
@@ -54,12 +54,14 @@ module.exports = function(ctx) {
           return _fire.apply(map, args);
         };
       }
-
       ctx.map = map;
       ctx.events = events(ctx);
       ctx.ui = ui(ctx);
       ctx.container = map.getContainer();
       ctx.store = new Store(ctx);
+      // if (!ctx.snapping) {
+      //   ctx.snapping = new Snapping(ctx);
+      // }
 
       controlContainer = ctx.ui.addButtons();
 
@@ -88,20 +90,20 @@ module.exports = function(ctx) {
       ctx.map.addSource(Constants.sources.COLD, {
         data: {
           type: Constants.geojsonTypes.FEATURE_COLLECTION,
-          features: []
+          features: [],
         },
-        type: "geojson"
+        type: "geojson",
       });
 
       // hot features style
       ctx.map.addSource(Constants.sources.HOT, {
         data: {
           type: Constants.geojsonTypes.FEATURE_COLLECTION,
-          features: []
+          features: [],
         },
-        type: "geojson"
+        type: "geojson",
       });
-      ctx.options.styles.forEach(style => {
+      ctx.options.styles.forEach((style) => {
         ctx.map.addLayer(style);
       });
 
@@ -111,7 +113,7 @@ module.exports = function(ctx) {
     // Check for layers and sources before attempting to remove
     // If user adds draw control and removes it before the map is loaded, layers and sources will be missing
     removeLayers() {
-      ctx.options.styles.forEach(style => {
+      ctx.options.styles.forEach((style) => {
         if (ctx.map.getLayer(style.id)) {
           ctx.map.removeLayer(style.id);
         }
@@ -124,7 +126,7 @@ module.exports = function(ctx) {
       if (ctx.map.getSource(Constants.sources.HOT)) {
         ctx.map.removeSource(Constants.sources.HOT);
       }
-    }
+    },
   };
 
   ctx.setup = setup;

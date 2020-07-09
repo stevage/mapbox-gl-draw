@@ -40,7 +40,7 @@ exports.getBufferLayer = (bufferLayerId, rootLayer, snapDistance) => {
     bufferLayer["source-layer"] = rootLayer.sourceLayer;
   }
   if (rootLayer.filter) {
-    bufferLayer.filter = rootLayer.filter;
+    bufferLayer.filter = rootLayer.filter.filter(filt => !(filt instanceof Array) || filt[0]!== '!=');
   }
   if (bufferLayer.type === "circle") {
     bufferLayer.paint = {
