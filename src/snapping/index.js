@@ -7,7 +7,7 @@ const {
   featureWrapperOnPoint,
   selectedFeatureIsPoint,
   notPointFilter,
-  notSelectedFeatureFilter
+  notSelectedFeatureFilter,
 } = require("./util");
 
 class Snapping {
@@ -87,12 +87,12 @@ class Snapping {
   }
 
   enableSnapping() {
-    this._snappableLayers().forEach(l => this._addSnapBuffer(l));
+    this._snappableLayers().forEach((l) => this._addSnapBuffer(l));
     this.map.on("mousemove", throttle(this._mouseoverHandler, 100));
     this.map.on("mouseout", this._mouseoutHandler);
     this.map.addSource("_snap_vertex", {
       type: "geojson",
-      data: { type: "FeatureCollection", features: [] }
+      data: { type: "FeatureCollection", features: [] },
     });
     this.map.addLayer({
       id: "_snap_vertex",
@@ -102,8 +102,8 @@ class Snapping {
         "circle-color": "transparent",
         "circle-radius": 5,
         "circle-stroke-width": 3,
-        "circle-stroke-color": "orange"
-      }
+        "circle-stroke-color": "orange",
+      },
     });
   }
 
@@ -111,7 +111,7 @@ class Snapping {
     const { x, y } = e.point;
     let snappableFeaturesNearMouse = this.map
       .queryRenderedFeatures([x, y], {
-        layers: this.bufferLayers.map(l => getBufferLayerId(l))
+        layers: this.bufferLayers.map((l) => getBufferLayerId(l)),
       })
       .filter(notSelectedFeatureFilter(this.store, this.snapToSelected));
 
@@ -159,7 +159,7 @@ class Snapping {
   }
 
   disableSnapping() {
-    this._snappableLayers().forEach(l => this._removeSnapBuffer(l));
+    this._snappableLayers().forEach((l) => this._removeSnapBuffer(l));
     this.map.removeLayer("_snap_vertex");
     this.map.removeSource("_snap_vertex");
   }
@@ -171,7 +171,7 @@ class Snapping {
     ) {
       const hoverPoint = {
         type: "Point",
-        coordinates: [lngLat.lng, lngLat.lat]
+        coordinates: [lngLat.lng, lngLat.lat],
       };
       let snapPoint;
       if (this.snappedGeometry.type === "Point") {
@@ -196,7 +196,7 @@ class Snapping {
         lng: snapPoint.geometry.coordinates[0],
         lat: snapPoint.geometry.coordinates[1],
         snapped: true,
-        snappedFeature: this.snappedFeature
+        snappedFeature: this.snappedFeature,
       };
     } else {
       this.clearSnapCoord();
@@ -212,8 +212,8 @@ class Snapping {
     if (typeof this.snapLayers === "function") {
       return this.map
         .getStyle()
-        .layers.filter(l => !l.id.match(/^_snap_/) && this.snapLayers(l))
-        .map(l => l.id);
+        .layers.filter((l) => !l.id.match(/^_snap_/) && this.snapLayers(l))
+        .map((l) => l.id);
     } else {
       return this.snapLayers || [];
     }
@@ -252,7 +252,7 @@ class Snapping {
         {
           id: feature.id,
           source: feature.source,
-          ...(feature.sourceLayer && { sourceLayer: feature.sourceLayer })
+          ...(feature.sourceLayer && { sourceLayer: feature.sourceLayer }),
         },
         { "snap-hover": state }
       );
@@ -271,11 +271,23 @@ class Snapping {
     setTimeout(() => {
       const newLayers = this._snappableLayers();
       this.bufferLayers
-        .filter(l => newLayers.indexOf(l) < 0)
-        .forEach(l => this._removeSnapBuffer(l));
+        .filter((l) => newLayers.indexOf(l) < 0)
+        .forEach((l) => this._removeSnapBuffer(l));
       newLayers
-        .filter(l => this.bufferLayers.indexOf(l) < 0)
-        .forEach(l => this._addSnapBuffer(l));
+        .filter((l) => this.bufferLayers.indexOf(l) < 0)
+        .forEach((l) => this._addSnapBuffer(l));
+      newLayers
+        .filter((l) => this.bufferLayers.indexOf(l) >= 0)
+        .forEach((l) =>
+          this.map.setFilter(
+            getBufferLayerId(l),
+            this.map
+              .getLayer(l)
+              .filter.filter(
+                (filt) => !(filt instanceof Array) || filt[0] !== "!="
+              )
+          )
+        );
       this.bufferLayers = newLayers;
     });
   }
