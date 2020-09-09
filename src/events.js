@@ -80,6 +80,10 @@ module.exports = function (ctx) {
     ) {
       if (currentModeName !== 'freehand') currentMode.click(event);
     } else {
+      // Sometimes after entering freehand draw mode, if the user clicks while moving the mouse,
+      // a drag event will be fired, even though the mouse is not being held down. This causes
+      // event.featureTarget to be undefined and the draw mode to revert to normal polygon mode -
+      // so instead, we revert it to static here.
       if (event.featureTarget !== undefined) {
         currentMode.mouseup(event);
       } else if (currentModeName === 'freehand') {
