@@ -29,15 +29,15 @@ class CursorManager {
       .filter(l => !l.layer.id.includes("snap"));
 
     let cursorType
-    if(eventType === 'drag'){
-      cursorType = cursors.GRABBING
+    if(this.overridedGetCursorType){
+      cursorType = this.overridedGetCursorType({
+        snapped: this.snapped,
+        isOverSelected: Boolean(glDrawFeats[0]),
+        overFeatures: allFeatures.length > 0 ? allFeatures : null
+      })
     } else {
-      if(this.overridedGetCursorType){
-        cursorType = this.overridedGetCursorType({
-          snapped: this.snapped,
-          isOverSelected: Boolean(glDrawFeats[0]),
-          overFeatures: allFeatures.length > 0 ? allFeatures : null
-        })
+      if(eventType === 'drag'){
+        cursorType = cursors.GRABBING
       }else{
         cursorType =
           this.getCursorType ?

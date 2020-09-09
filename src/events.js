@@ -28,7 +28,7 @@ module.exports = function (ctx) {
         time: new Date().getTime()
       })
     ) {
-      CM.setCursor(event, "drag");
+      CM.setCursor(event, "drag", currentModeName);
 
       // ctx.ui.queueMapClasses({ mouse: Constants.cursors.DRAG });
       currentMode.drag(event);
@@ -53,7 +53,7 @@ module.exports = function (ctx) {
     if (button === 1) {
       return events.mousedrag(event);
     }
-    const target = CM.setCursor(event, 'mousemove');
+    const target = CM.setCursor(event, 'mousemove', currentModeName);
     event.featureTarget = target;
     currentMode.mousemove(event);
   };
@@ -185,7 +185,16 @@ module.exports = function (ctx) {
   };
 
   function changeMode(modename, nextModeOptions, eventOptions = {}) {
-    currentMode.stop();
+
+    // While freehand draw mode is active, the cursor should always be shown as a crosshair.
+    if (modename === 'freehand') {
+      ctx.ui.queueMapClasses({ mouse: Constants.cursors.ADD });
+      ctx.ui.updateMapClasses();
+      CM.overrideGetCursorTypeLogic(() => Constants.cursors.ADD);
+    } else {
+      CM.overrideGetCursorTypeLogic();
+      ctx.ui.updateMapClasses();
+    }
 
     const modebuilder = modes[modename];
     if (modebuilder === undefined) {
