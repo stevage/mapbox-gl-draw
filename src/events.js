@@ -199,6 +199,8 @@ module.exports = function (ctx) {
       ctx.ui.updateMapClasses();
     }
 
+    currentMode.stop();
+
     const modebuilder = modes[modename];
     if (modebuilder === undefined) {
       throw new Error(`${modename} is not valid`);
