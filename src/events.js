@@ -28,8 +28,7 @@ module.exports = function (ctx) {
         time: new Date().getTime()
       })
     ) {
-      CM.setCursor(event, "drag", currentModeName);
-
+      CM.setCursor(event, "drag");
       // ctx.ui.queueMapClasses({ mouse: Constants.cursors.DRAG });
       currentMode.drag(event);
     } else {
@@ -79,9 +78,13 @@ module.exports = function (ctx) {
         time: new Date().getTime()
       })
     ) {
-      currentMode.click(event);
+      if (currentModeName !== 'freehand') currentMode.click(event);
     } else {
-      currentMode.mouseup(event);
+      if (event.featureTarget !== undefined) {
+        currentMode.mouseup(event);
+      } else if (currentModeName === 'freehand') {
+        changeMode(Constants.modes.STATIC);
+      }
     }
   };
 
