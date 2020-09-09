@@ -191,8 +191,11 @@ module.exports = function (ctx) {
       ctx.ui.queueMapClasses({ mouse: Constants.cursors.ADD });
       ctx.ui.updateMapClasses();
       CM.overrideGetCursorTypeLogic(() => Constants.cursors.ADD);
-    } else {
+    }
+    // Reset cursor if freehand draw mode is being exited.
+    if (currentModeName === 'freehand') {
       CM.overrideGetCursorTypeLogic();
+      ctx.ui.queueMapClasses({ mouse: Constants.cursors.GRAB });
       ctx.ui.updateMapClasses();
     }
 
