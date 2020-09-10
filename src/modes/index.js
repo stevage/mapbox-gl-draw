@@ -5,5 +5,6 @@ module.exports = {
   draw_polygon: require("./draw_polygon"),
   draw_line_string: require("./draw_line_string"),
   split: require("./split"),
-  coincident_select: require("./coincident_select")
+  coincident_select: require("./coincident_select"),
+  freehand: require("./freehand")
 };
