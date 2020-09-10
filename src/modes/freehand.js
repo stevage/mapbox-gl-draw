@@ -3,7 +3,7 @@ const { geojsonTypes, cursors, types, updateActions, modes, events } =  require(
 const doubleClickZoom = require('../lib/double_click_zoom');
 const simplify = require('@turf/simplify').default;
 
-const FreeDraw = Object.assign({}, DrawPolygon)
+const { onMouseMove, ...FreeDraw } = Object.assign({}, DrawPolygon)
 
 FreeDraw.onSetup = function() {
     const polygon = this.newFeature({
