@@ -52,7 +52,7 @@ module.exports = function (ctx) {
     if (button === 1) {
       return events.mousedrag(event);
     }
-    const target = CM.setCursor(event, 'mousemove', currentModeName);
+    const target = CM.setCursor(event, 'mousemove');
     event.featureTarget = target;
     currentMode.mousemove(event);
   };
