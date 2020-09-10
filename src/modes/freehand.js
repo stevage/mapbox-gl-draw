@@ -28,8 +28,6 @@ FreeDraw.onSetup = function() {
         this.map.dragPan.disable();
     }, 0);
 
-    this.updateUIClasses({ mouse: cursors.ADD });
-    this.activateUIButton(types.POLYGON);
     this.setActionableState({
         trash: true
     });
@@ -43,7 +41,6 @@ FreeDraw.onSetup = function() {
 
 FreeDraw.onDrag = FreeDraw.onTouchMove = function (state, e){
     state.dragMoving = true;
-    this.updateUIClasses({ mouse: cursors.ADD });
     state.polygon.updateCoordinate(`0.${state.currentVertexPosition}`, e.lngLat.lng, e.lngLat.lat);
     state.currentVertexPosition++;
     state.polygon.updateCoordinate(`0.${state.currentVertexPosition}`, e.lngLat.lng, e.lngLat.lat);
