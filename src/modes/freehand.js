@@ -12,7 +12,10 @@ FreeDraw.onSetup = function() {
         geometry: {
             type: geojsonTypes.POLYGON,
             coordinates: [[]]
-        }
+        },
+        // The id of the freedrawn polygon is explicitly set, so we can tell simple_select's click handler
+        // not to do anything with this feature.
+        id: 'freehand'
     });
 
     this.addFeature(polygon);
