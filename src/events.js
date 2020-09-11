@@ -78,7 +78,9 @@ module.exports = function (ctx) {
         time: new Date().getTime(),
       })
     ) {
-      if (currentModeName !== "freehand") currentMode.click(event);
+      if (currentModeName !== "freehand") {
+        currentMode.click(event);
+      }
     } else {
       // Sometimes after entering freehand draw mode, if the user clicks while moving the mouse,
       // a drag event will be fired, even though the mouse is not being held down. This causes
