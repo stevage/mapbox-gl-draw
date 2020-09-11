@@ -25,7 +25,7 @@ module.exports = function (ctx) {
     if (
       isDrag({
         point: event.point,
-        time: new Date().getTime()
+        time: new Date().getTime(),
       })
     ) {
       CM.setCursor(event, "drag");
@@ -37,11 +37,11 @@ module.exports = function (ctx) {
   };
 
   events.mousedrag = function (event) {
-    events.drag(event, endInfo => !isClick(mouseDownInfo, endInfo));
+    events.drag(event, (endInfo) => !isClick(mouseDownInfo, endInfo));
   };
 
   events.touchdrag = function (event) {
-    events.drag(event, endInfo => !isTap(touchStartInfo, endInfo));
+    events.drag(event, (endInfo) => !isTap(touchStartInfo, endInfo));
   };
 
   events.mousemove = function (event) {
@@ -52,7 +52,7 @@ module.exports = function (ctx) {
     if (button === 1) {
       return events.mousedrag(event);
     }
-    const target = CM.setCursor(event, 'mousemove');
+    const target = CM.setCursor(event, "mousemove");
     event.featureTarget = target;
     currentMode.mousemove(event);
   };
@@ -60,25 +60,25 @@ module.exports = function (ctx) {
   events.mousedown = function (event) {
     mouseDownInfo = {
       time: new Date().getTime(),
-      point: event.point
+      point: event.point,
     };
-    const target = CM.setCursor(event, 'mousedown');
+    const target = CM.setCursor(event, "mousedown");
 
     event.featureTarget = target;
     currentMode.mousedown(event);
   };
 
   events.mouseup = function (event) {
-    const target = CM.setCursor(event, 'mouseup');
+    const target = CM.setCursor(event, "mouseup");
     event.featureTarget = target;
 
     if (
       isClick(mouseDownInfo, {
         point: event.point,
-        time: new Date().getTime()
+        time: new Date().getTime(),
       })
     ) {
-      if (currentModeName !== 'freehand') currentMode.click(event);
+      if (currentModeName !== "freehand") currentMode.click(event);
     } else {
       // Sometimes after entering freehand draw mode, if the user clicks while moving the mouse,
       // a drag event will be fired, even though the mouse is not being held down. This causes
@@ -86,7 +86,7 @@ module.exports = function (ctx) {
       // so instead, we revert it to static here.
       if (event.featureTarget !== undefined) {
         currentMode.mouseup(event);
-      } else if (currentModeName === 'freehand') {
+      } else if (currentModeName === "freehand") {
         changeMode(Constants.modes.STATIC);
       }
     }
@@ -106,7 +106,7 @@ module.exports = function (ctx) {
 
     touchStartInfo = {
       time: new Date().getTime(),
-      point: event.point
+      point: event.point,
     };
     const target = featuresAt.touch(event, null, ctx)[0];
     event.featureTarget = target;
@@ -134,7 +134,7 @@ module.exports = function (ctx) {
     if (
       isTap(touchStartInfo, {
         time: new Date().getTime(),
-        point: event.point
+        point: event.point,
       })
     ) {
       currentMode.tap(event);
@@ -145,7 +145,7 @@ module.exports = function (ctx) {
 
   // 8 - Backspace
   // 46 - Delete
-  const isKeyModeValid = code =>
+  const isKeyModeValid = (code) =>
     !(code === 8 || code === 46 || (code >= 48 && code <= 57));
 
   events.keydown = function (event) {
@@ -182,7 +182,7 @@ module.exports = function (ctx) {
   events.data = function (event) {
     if (event.dataType === "style") {
       const { setup, map, options, store } = ctx;
-      const hasLayers = options.styles.some(style => map.getLayer(style.id));
+      const hasLayers = options.styles.some((style) => map.getLayer(style.id));
       if (!hasLayers) {
         setup.addLayers();
         store.setDirty();
@@ -192,18 +192,13 @@ module.exports = function (ctx) {
   };
 
   function changeMode(modename, nextModeOptions, eventOptions = {}) {
-
     // While freehand draw mode is active, the cursor should always be shown as a crosshair.
-    if (modename === 'freehand') {
-      ctx.ui.queueMapClasses({ mouse: Constants.cursors.ADD });
-      ctx.ui.updateMapClasses();
+    if (modename === "freehand") {
       CM.overrideGetCursorTypeLogic(() => Constants.cursors.ADD);
     }
     // Reset cursor if freehand draw mode is being exited.
-    if (currentModeName === 'freehand') {
+    if (currentModeName === "freehand") {
       CM.overrideGetCursorTypeLogic();
-      ctx.ui.queueMapClasses({ mouse: Constants.cursors.GRAB });
-      ctx.ui.updateMapClasses();
     }
 
     currentMode.stop();
@@ -225,12 +220,12 @@ module.exports = function (ctx) {
   const actionState = {
     trash: false,
     combineFeatures: false,
-    uncombineFeatures: false
+    uncombineFeatures: false,
   };
 
   function actionable(actions) {
     let changed = false;
-    Object.keys(actions).forEach(action => {
+    Object.keys(actions).forEach((action) => {
       if (actionState[action] === undefined)
         throw new Error("Invalid action type");
       if (actionState[action] !== actions[action]) changed = true;
@@ -303,7 +298,7 @@ module.exports = function (ctx) {
     },
     getMode() {
       return currentModeName;
-    }
+    },
   };
 
   return api;
