@@ -185,6 +185,9 @@ SimpleSelect.startOnActiveFeature = function (state, e) {
 };
 
 SimpleSelect.clickOnFeature = function (state, e) {
+  // This prevents a polygon drawn in freehand mode from being resized/moved.
+  if (e.featureTarget.properties.id === 'freehand') return;
+
   // Stop everything
   doubleClickZoom.disable(this);
   this.stopExtendedInteractions(state);
