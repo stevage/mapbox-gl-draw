@@ -30,7 +30,7 @@ FreeDraw.onSetup = function () {
     },
     // The id of the freedrawn polygon is explicitly set, so we can tell simple_select's click handler
     // not to do anything with this feature.
-    id: "freehand",
+    id: "no_interact",
   });
 
   this.addFeature(polygon);

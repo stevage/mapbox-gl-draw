@@ -11,7 +11,7 @@ RectangularDraw.onSetup = function () {
       type: geojsonTypes.POLYGON,
       coordinates: [[]],
     },
-    id: "freehand",
+    id: "no_interact",
   });
 
   this.addFeature(polygon);
@@ -36,10 +36,8 @@ RectangularDraw.onDrag = RectangularDraw.onTouchMove = function (state, e) {
   const { lng: endLng, lat: endLat } = e.lngLat;
 
   state.polygon.updateCoordinate("0.1", startLng, endLat);
-  state.polygon.updateCoordinate("0.2", endLng, startLat);
-  state.polygon.updateCoordinate("0.3", endLng, endLat);
-
-  console.log(state.polygon);
+  state.polygon.updateCoordinate("0.2", endLng, endLat);
+  state.polygon.updateCoordinate("0.3", endLng, startLat);
 };
 
 RectangularDraw.onMouseDown = function (state, e) {
@@ -57,6 +55,7 @@ RectangularDraw.onMouseUp = function (state, e) {
   if (state.dragMoving) {
     this.fireUpdate();
     this.changeMode(modes.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
+    this.clearSelectedFeatures();
   }
 };
 
