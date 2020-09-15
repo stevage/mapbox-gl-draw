@@ -34,7 +34,7 @@ RectangularDraw.onDrag = RectangularDraw.onTouchMove = function (state, e) {
     const { lng, lat } = e.lngLat;
 
     // Initialize corner vertices of rectangle
-    [0, 1, 2, 3, 4].forEach((vertex) =>
+    [0, 1, 2, 3].forEach((vertex) =>
       state.polygon.updateCoordinate(`0.${vertex}`, lng, lat)
     );
     state.dragMoving = true;
@@ -51,6 +51,11 @@ RectangularDraw.onDrag = RectangularDraw.onTouchMove = function (state, e) {
 
 RectangularDraw.onMouseUp = function (state, e) {
   if (state.dragMoving) {
+    // The last vertex in the polygon is set after dragging is done.
+    // Otherwise, the vertex will not appear under the cursor while drawing.
+    const [startLng, startLat] = state.polygon.getCoordinates()[0][0];
+    state.polygon.updateCoordinate("0.4", startLng, startLat);
+
     this.fireUpdate();
     this.changeMode(modes.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
     this.clearSelectedFeatures();
