@@ -43,12 +43,10 @@ RectangularDraw.onDrag = RectangularDraw.onTouchMove = function (state, e) {
 RectangularDraw.onMouseDown = function (state, e) {
   const { lng, lat } = e.lngLat;
 
-  // Initialize corners of rectangle
-  state.polygon.updateCoordinate("0.0", lng, lat);
-  state.polygon.updateCoordinate("0.1", lng, lat);
-  state.polygon.updateCoordinate("0.2", lng, lat);
-  state.polygon.updateCoordinate("0.3", lng, lat);
-  state.polygon.updateCoordinate("0.4", lng, lat);
+  // Initialize corner vertices of rectangle
+  [0, 1, 2, 3, 4].forEach((vertex) =>
+    state.polygon.updateCoordinate(`0.${vertex}`, lng, lat)
+  );
 };
 
 RectangularDraw.onMouseUp = function (state, e) {

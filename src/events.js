@@ -9,6 +9,8 @@ const isTap = require("./lib/is_tap");
 const Constants = require("./constants");
 const objectToMode = require("./modes/object_to_mode");
 
+const groupSelectModes = ["freehand", "marquee"];
+
 module.exports = function (ctx) {
   const modes = Object.keys(ctx.options.modes).reduce((m, k) => {
     m[k] = objectToMode(ctx.options.modes[k]);
@@ -78,17 +80,17 @@ module.exports = function (ctx) {
         time: new Date().getTime(),
       })
     ) {
-      if (currentModeName !== "freehand") {
+      if (groupSelectModes.includes(currentModeName)) {
         currentMode.click(event);
       }
     } else {
-      // Sometimes after entering freehand draw mode, if the user clicks while moving the mouse,
+      // Sometimes after entering a group select mode, if the user clicks while moving the mouse,
       // a drag event will be fired, even though the mouse is not being held down. This causes
       // event.featureTarget to be undefined and the draw mode to revert to normal polygon mode -
       // so instead, we revert it to static here.
       if (event.featureTarget !== undefined) {
         currentMode.mouseup(event);
-      } else if (currentModeName === "freehand") {
+      } else if (groupSelectModes.includes(currentModeName)) {
         changeMode(Constants.modes.STATIC);
       }
     }
@@ -194,12 +196,12 @@ module.exports = function (ctx) {
   };
 
   function changeMode(modename, nextModeOptions, eventOptions = {}) {
-    // While freehand draw mode is active, the cursor should always be shown as a crosshair.
-    if (modename === "freehand") {
+    // if a group select draw mode is active, the cursor should always be shown as a crosshair.
+    if (groupSelectModes.includes(modename)) {
       CM.overrideGetCursorTypeLogic(() => Constants.cursors.ADD);
     }
-    // Reset cursor if freehand draw mode is being exited.
-    if (currentModeName === "freehand") {
+    // Reset cursor if a group select draw mode is being exited.
+    if (groupSelectModes.includes(currentModeName)) {
       CM.overrideGetCursorTypeLogic();
     }
 
