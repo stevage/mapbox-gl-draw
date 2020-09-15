@@ -30,7 +30,16 @@ RectangularDraw.onSetup = function () {
 };
 
 RectangularDraw.onDrag = RectangularDraw.onTouchMove = function (state, e) {
-  state.dragMoving = true;
+  if (!state.dragMoving) {
+    const { lng, lat } = e.lngLat;
+
+    // Initialize corner vertices of rectangle
+    [0, 1, 2, 3, 4].forEach((vertex) =>
+      state.polygon.updateCoordinate(`0.${vertex}`, lng, lat)
+    );
+    state.dragMoving = true;
+    return;
+  }
 
   const [startLng, startLat] = state.polygon.getCoordinates()[0][0];
   const { lng: endLng, lat: endLat } = e.lngLat;
@@ -40,21 +49,16 @@ RectangularDraw.onDrag = RectangularDraw.onTouchMove = function (state, e) {
   state.polygon.updateCoordinate("0.3", endLng, startLat);
 };
 
-RectangularDraw.onMouseDown = function (state, e) {
-  const { lng, lat } = e.lngLat;
-
-  // Initialize corner vertices of rectangle
-  [0, 1, 2, 3, 4].forEach((vertex) =>
-    state.polygon.updateCoordinate(`0.${vertex}`, lng, lat)
-  );
-};
-
 RectangularDraw.onMouseUp = function (state, e) {
   if (state.dragMoving) {
     this.fireUpdate();
     this.changeMode(modes.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
     this.clearSelectedFeatures();
   }
+};
+
+RectangularDraw.onTouchEnd = function (state, e) {
+  this.onMouseUp(state, e);
 };
 
 RectangularDraw.fireUpdate = function () {
