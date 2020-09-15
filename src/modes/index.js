@@ -6,5 +6,6 @@ module.exports = {
   draw_line_string: require("./draw_line_string"),
   split: require("./split"),
   coincident_select: require("./coincident_select"),
-  freehand: require("./freehand")
+  freehand: require("./freehand"),
+  marquee: require("./marquee"),
 };
