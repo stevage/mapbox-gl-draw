@@ -9,8 +9,6 @@ const isTap = require("./lib/is_tap");
 const Constants = require("./constants");
 const objectToMode = require("./modes/object_to_mode");
 
-const groupSelectModes = ["freehand", "marquee"];
-
 module.exports = function (ctx) {
   const modes = Object.keys(ctx.options.modes).reduce((m, k) => {
     m[k] = objectToMode(ctx.options.modes[k]);
@@ -80,7 +78,7 @@ module.exports = function (ctx) {
         time: new Date().getTime(),
       })
     ) {
-      if (groupSelectModes.includes(currentModeName)) {
+      if (Constants.groupSelectModes.includes(currentModeName)) {
         currentMode.click(event);
       }
     } else {
@@ -90,7 +88,7 @@ module.exports = function (ctx) {
       // so instead, we revert it to static here.
       if (event.featureTarget !== undefined) {
         currentMode.mouseup(event);
-      } else if (groupSelectModes.includes(currentModeName)) {
+      } else if (Constants.groupSelectModes.includes(currentModeName)) {
         changeMode(Constants.modes.STATIC);
       }
     }
@@ -197,11 +195,11 @@ module.exports = function (ctx) {
 
   function changeMode(modename, nextModeOptions, eventOptions = {}) {
     // if a group select draw mode is active, the cursor should always be shown as a crosshair.
-    if (groupSelectModes.includes(modename)) {
+    if (Constants.groupSelectModes.includes(modename)) {
       CM.overrideGetCursorTypeLogic(() => Constants.cursors.ADD);
     }
     // Reset cursor if a group select draw mode is being exited.
-    if (groupSelectModes.includes(currentModeName)) {
+    if (Constants.groupSelectModes.includes(currentModeName)) {
       CM.overrideGetCursorTypeLogic();
     }
 

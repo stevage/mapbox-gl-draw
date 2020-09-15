@@ -12,11 +12,11 @@ module.exports = {
     CONTROL_GROUP: "mapboxgl-ctrl-group",
     ATTRIBUTION: "mapboxgl-ctrl-attrib",
     ACTIVE_BUTTON: "active",
-    BOX_SELECT: "mapbox-gl-draw_boxselect"
+    BOX_SELECT: "mapbox-gl-draw_boxselect",
   },
   sources: {
     HOT: "mapbox-gl-draw-hot",
-    COLD: "mapbox-gl-draw-cold"
+    COLD: "mapbox-gl-draw-cold",
   },
   cursors: {
     ADD: "add",
@@ -25,12 +25,12 @@ module.exports = {
     POINTER: "pointer",
     GRAB: "grab",
     GRABBING: "grabbing",
-    NONE: "none"
+    NONE: "none",
   },
   types: {
     POLYGON: "polygon",
     LINE: "line_string",
-    POINT: "point"
+    POINT: "point",
   },
   geojsonTypes: {
     FEATURE: "Feature",
@@ -41,7 +41,7 @@ module.exports = {
     MULTI_PREFIX: "Multi",
     MULTI_POINT: "MultiPoint",
     MULTI_LINE_STRING: "MultiLineString",
-    MULTI_POLYGON: "MultiPolygon"
+    MULTI_POLYGON: "MultiPolygon",
   },
   modes: {
     DRAW_LINE_STRING: "draw_line_string",
@@ -50,8 +50,10 @@ module.exports = {
     SIMPLE_SELECT: "simple_select",
     DIRECT_SELECT: "direct_select",
     STATIC: "static",
-    FREEHAND: "freehand"
+    FREEHAND: "freehand",
+    MARQUEE: "marquee",
   },
+  groupSelectModes: ["freehand", "marquee"],
   events: {
     CREATE: "draw.create",
     DELETE: "draw.delete",
@@ -61,20 +63,20 @@ module.exports = {
     ACTIONABLE: "draw.actionable",
     RENDER: "draw.render",
     COMBINE_FEATURES: "draw.combine",
-    UNCOMBINE_FEATURES: "draw.uncombine"
+    UNCOMBINE_FEATURES: "draw.uncombine",
   },
   updateActions: {
     MOVE: "move",
-    CHANGE_COORDINATES: "change_coordinates"
+    CHANGE_COORDINATES: "change_coordinates",
   },
   meta: {
     FEATURE: "feature",
     MIDPOINT: "midpoint",
-    VERTEX: "vertex"
+    VERTEX: "vertex",
   },
   activeStates: {
     ACTIVE: "true",
-    INACTIVE: "false"
+    INACTIVE: "false",
   },
   interactions: [
     "scrollZoom",
@@ -83,12 +85,12 @@ module.exports = {
     "dragPan",
     "keyboard",
     "doubleClickZoom",
-    "touchZoomRotate"
+    "touchZoomRotate",
   ],
   LAT_MIN: -90,
   LAT_RENDERED_MIN: -85,
   LAT_MAX: 90,
   LAT_RENDERED_MAX: 85,
   LNG_MIN: -270,
-  LNG_MAX: 270
+  LNG_MAX: 270,
 };
