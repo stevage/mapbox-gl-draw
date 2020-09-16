@@ -78,7 +78,7 @@ module.exports = function (ctx) {
         time: new Date().getTime(),
       })
     ) {
-      if (Constants.groupSelectModes.includes(currentModeName)) {
+      if (!Constants.groupSelectModes.includes(currentModeName)) {
         currentMode.click(event);
       }
     } else {
