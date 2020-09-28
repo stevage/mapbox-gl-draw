@@ -22,7 +22,7 @@ RectangularDraw.onSetup = function () {
   setTimeout(() => {
     if (!this.map || !this.map.dragPan) return;
     this.map.dragPan.disable();
-  }, 0);
+  });
 
   this.setActionableState({
     trash: true,
