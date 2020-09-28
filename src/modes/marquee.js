@@ -19,6 +19,11 @@ RectangularDraw.onSetup = function () {
   this.clearSelectedFeatures();
   doubleClickZoom.disable(this);
 
+  setTimeout(() => {
+    if (!this.map || !this.map.dragPan) return;
+    this.map.dragPan.disable();
+  });
+
   this.setActionableState({
     trash: true,
   });
