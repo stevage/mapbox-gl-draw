@@ -47,6 +47,10 @@ class Snapping {
     this.map.on("draw.modechange", () => {
       this.clearSnapCoord();
     });
+    this.map.on("draw.refreshsnapping", () => {
+      this.bufferLayers = [];
+      this._addSnapSourceAndLayer();
+    });
   }
 
   /** OUTWARD FACING METHODS */
@@ -86,10 +90,9 @@ class Snapping {
     }
   }
 
-  enableSnapping() {
-    this._snappableLayers().forEach((l) => this._addSnapBuffer(l));
-    this.map.on("mousemove", throttle(this._mouseoverHandler, 100));
-    this.map.on("mouseout", this._mouseoutHandler);
+  _addSnapSourceAndLayer() {
+    if (this.map.getSource("_snap_vertex")) return;
+
     this.map.addSource("_snap_vertex", {
       type: "geojson",
       data: { type: "FeatureCollection", features: [] },
@@ -105,6 +108,13 @@ class Snapping {
         "circle-stroke-color": "orange",
       },
     });
+  }
+
+  enableSnapping() {
+    this._snappableLayers().forEach((l) => this._addSnapBuffer(l));
+    this.map.on("mousemove", throttle(this._mouseoverHandler, 100));
+    this.map.on("mouseout", this._mouseoutHandler);
+    this._addSnapSourceAndLayer();
   }
 
   _mouseoverHandler(e) {
@@ -270,15 +280,18 @@ class Snapping {
   _updateSnapLayers() {
     setTimeout(() => {
       const newLayers = this._snappableLayers();
+
       this.bufferLayers
-        .filter((l) => newLayers.indexOf(l) < 0)
+        .filter((l) => !newLayers.includes(l))
         .forEach((l) => this._removeSnapBuffer(l));
+
       newLayers
-        .filter((l) => this.bufferLayers.indexOf(l) < 0)
+        .filter((l) => !this.bufferLayers.includes(l))
         .forEach((l) => this._addSnapBuffer(l));
+
       newLayers
-        .filter((l) => this.bufferLayers.indexOf(l) >= 0)
-        .forEach((l) =>
+        .filter((l) => this.bufferLayers.includes(l))
+        .forEach((l) => {
           this.map.setFilter(
             getBufferLayerId(l),
             this.map
@@ -286,8 +299,8 @@ class Snapping {
               .filter.filter(
                 (filt) => !(filt instanceof Array) || filt[0] !== "!="
               )
-          )
-        );
+          );
+        });
       this.bufferLayers = newLayers;
     });
   }
