@@ -8,7 +8,7 @@ const cursors = Constants.cursors;
 
 const DrawPolygon = {};
 
-DrawPolygon.onSetup = function() {
+DrawPolygon.onSetup = function(opts) {
   if (this._ctx.snapping) {
     this._ctx.snapping.setSnapToSelected(false);
   }
@@ -42,7 +42,9 @@ DrawPolygon.onSetup = function() {
 
   return {
     polygon,
-    currentVertexPosition: 0
+    currentVertexPosition: 0,
+    redraw: opts.redraw,
+    previousFeatureId: opts.previousFeatureId
   };
 };
 
@@ -74,9 +76,16 @@ DrawPolygon.clickAnywhere = function(state, e) {
 };
 
 DrawPolygon.clickOnVertex = function(state) {
-  return this.changeMode(Constants.modes.SIMPLE_SELECT, {
-    featureIds: [state.polygon.id]
-  });
+  if (state.redraw) {
+    return this.changeMode(Constants.modes.DRAW_POLYGON, {
+      previousFeatureId: state.polygon.id,
+      redraw: true
+    });
+  } else {
+    return this.changeMode(Constants.modes.SIMPLE_SELECT, {
+      featureIds: [state.polygon.id]
+    });
+  }
 };
 
 DrawPolygon.onMouseMove = function(state, e) {
@@ -92,6 +101,11 @@ DrawPolygon.onMouseMove = function(state, e) {
 };
 
 DrawPolygon.onTap = DrawPolygon.onClick = function(state, e) {
+  // delete previously drawn polygon if it exists
+  if (state.redraw && state.previousFeatureId) {
+    this.deleteFeature(state.previousFeatureId, { silent: true });
+  }
+
   if (CommonSelectors.isVertex(e)) return this.clickOnVertex(state, e);
   return this.clickAnywhere(state, e);
 };

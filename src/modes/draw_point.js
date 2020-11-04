@@ -37,7 +37,11 @@ DrawPoint.onSetup = function(opts = {}) {
     trash: true
   });
 
-  return { point, ...opts };
+  return {
+    point,
+    redraw: opts.redraw,
+    previousFeatureId: opts.previousFeatureId
+  };
 };
 
 DrawPoint.stopDrawingAndRemove = function(state) {
@@ -56,12 +60,12 @@ DrawPoint.onTap = DrawPoint.onClick = function(state, e) {
 
   if (state.redraw) {
     // delete previously drawn point if it exists
-    if (state.featureIds && state.featureIds.length > 0) {
-      this.deleteFeature(state.featureIds[0], { silent: true });
+    if (state.previousFeatureId) {
+      this.deleteFeature(state.previousFeatureId, { silent: true });
     }
 
     this.changeMode(Constants.modes.DRAW_POINT, {
-      featureIds: [state.point.id],
+      previousFeatureId: state.point.id,
       redraw: true
     });
   } else {
