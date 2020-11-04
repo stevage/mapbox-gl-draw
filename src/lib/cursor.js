@@ -2,7 +2,7 @@ const featuresAt = require("./features_at");
 const cursors = require("../constants").cursors;
 
 const defaultCursorSelector = ({overFeatures}) => {
-return overFeatures? cursors.POINTER : cursors.GRAB;
+  return overFeatures ? cursors.POINTER : cursors.GRAB;
 }
 
 class CursorManager {

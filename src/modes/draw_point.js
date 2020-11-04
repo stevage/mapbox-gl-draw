@@ -4,7 +4,7 @@ const cursors = Constants.cursors;
 
 const DrawPoint = {};
 
-DrawPoint.onSetup = function() {
+DrawPoint.onSetup = function(opts = {}) {
   if (this._ctx.snapping) {
     this._ctx.snapping.setSnapToSelected(false);
   }
@@ -37,7 +37,7 @@ DrawPoint.onSetup = function() {
     trash: true
   });
 
-  return { point };
+  return { point, ...opts };
 };
 
 DrawPoint.stopDrawingAndRemove = function(state) {
@@ -53,9 +53,22 @@ DrawPoint.onTap = DrawPoint.onClick = function(state, e) {
   this.map.fire(Constants.events.CREATE, {
     features: [state.point.toGeoJSON()]
   });
-  this.changeMode(Constants.modes.SIMPLE_SELECT, {
-    featureIds: [state.point.id]
-  });
+
+  if (state.redraw) {
+    // delete previously drawn point if it exists
+    if (state.featureIds && state.featureIds.length > 0) {
+      this.deleteFeature(state.featureIds[0], { silent: true });
+    }
+
+    this.changeMode(Constants.modes.DRAW_POINT, {
+      featureIds: [state.point.id],
+      redraw: true
+    });
+  } else {
+    this.changeMode(Constants.modes.SIMPLE_SELECT, {
+      featureIds: [state.point.id]
+    });
+  }
 };
 
 DrawPoint.onStop = function(state) {
