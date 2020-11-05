@@ -136,6 +136,12 @@ DrawLineString.clickAnywhere = function (state, e) {
   } else {
     state.line.addCoordinate(0, lngLat.lng, lngLat.lat);
   }
+
+  if (state.line.isValidCreation()) {
+    this.map.fire(Constants.events.CREATING, {
+      features: [state.line.toGeoJSON(true)]
+    });
+  }
 };
 
 DrawLineString.clickOnVertex = function (state) {
@@ -144,11 +150,11 @@ DrawLineString.clickOnVertex = function (state) {
       previousFeatureId: state.line.id,
       redraw: true
     });
-  } else {
-    return this.changeMode(Constants.modes.SIMPLE_SELECT, {
-      featureIds: [state.line.id]
-    });
   }
+
+  return this.changeMode(Constants.modes.SIMPLE_SELECT, {
+    featureIds: [state.line.id]
+  });
 };
 
 DrawLineString.onMouseMove = function (state, e) {

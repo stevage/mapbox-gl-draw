@@ -22,21 +22,23 @@ Feature.prototype.setCoordinates = function(coords) {
   this.changed();
 };
 
-Feature.prototype.getCoordinates = function() {
-  return JSON.parse(JSON.stringify(this.coordinates));
+Feature.prototype.getCoordinates = function(creating) {
+  return creating
+    ? JSON.parse(JSON.stringify(this.coordinates.slice(0, this.coordinates.length - 1)))
+    : JSON.parse(JSON.stringify(this.coordinates));
 };
 
 Feature.prototype.setProperty = function(property, value) {
   this.properties[property] = value;
 };
 
-Feature.prototype.toGeoJSON = function() {
+Feature.prototype.toGeoJSON = function(creating = false) {
   return JSON.parse(JSON.stringify({
     id: this.id,
     type: Constants.geojsonTypes.FEATURE,
     properties: this.properties,
     geometry: {
-      coordinates: this.getCoordinates(),
+      coordinates: this.getCoordinates(creating),
       type: this.type
     }
   }));

@@ -73,6 +73,12 @@ DrawPolygon.clickAnywhere = function(state, e) {
     lngLat.lng,
     lngLat.lat
   );
+
+  if (state.polygon.isValidCreation()) {
+    this.map.fire(Constants.events.CREATING, {
+      features: [state.polygon.toGeoJSON()]
+    });
+  }
 };
 
 DrawPolygon.clickOnVertex = function(state) {
@@ -81,11 +87,11 @@ DrawPolygon.clickOnVertex = function(state) {
       previousFeatureId: state.polygon.id,
       redraw: true
     });
-  } else {
-    return this.changeMode(Constants.modes.SIMPLE_SELECT, {
-      featureIds: [state.polygon.id]
-    });
   }
+
+  return this.changeMode(Constants.modes.SIMPLE_SELECT, {
+    featureIds: [state.polygon.id]
+  });
 };
 
 DrawPolygon.onMouseMove = function(state, e) {

@@ -56,6 +56,7 @@ module.exports = {
   groupSelectModes: ["freehand", "marquee"],
   events: {
     CREATE: "draw.create",
+    CREATING: "draw.creating",
     DELETE: "draw.delete",
     UPDATE: "draw.update",
     SELECTION_CHANGE: "draw.selectionchange",

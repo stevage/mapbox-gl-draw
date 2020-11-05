@@ -12,6 +12,12 @@ Polygon.prototype.isValid = function() {
   return this.coordinates.every(ring => ring.length > 2);
 };
 
+Polygon.prototype.isValidCreation = function() {
+  console.log(this.coordinates);
+  if (this.coordinates.length === 0) return false;
+  return this.coordinates.every(ring => ring.length > 2);
+};
+
 // Expects valid geoJSON polygon geometry: first and last positions must be equivalent.
 Polygon.prototype.incomingCoords = function(coords) {
   this.coordinates = coords.map(ring => ring.slice(0, -1));
