@@ -96,7 +96,9 @@ DrawLineString.onSetup = function (opts) {
   return {
     line,
     currentVertexPosition,
-    direction
+    direction,
+    redraw: opts.redraw,
+    previousFeatureId: opts.previousFeatureId
   };
 };
 
@@ -137,9 +139,16 @@ DrawLineString.clickAnywhere = function (state, e) {
 };
 
 DrawLineString.clickOnVertex = function (state) {
-  return this.changeMode(Constants.modes.SIMPLE_SELECT, {
-    featureIds: [state.line.id]
-  });
+  if (state.redraw) {
+    return this.changeMode(Constants.modes.DRAW_LINE_STRING, {
+      previousFeatureId: state.line.id,
+      redraw: true
+    });
+  } else {
+    return this.changeMode(Constants.modes.SIMPLE_SELECT, {
+      featureIds: [state.line.id]
+    });
+  }
 };
 
 DrawLineString.onMouseMove = function (state, e) {
@@ -155,6 +164,11 @@ DrawLineString.onMouseMove = function (state, e) {
 };
 
 DrawLineString.onTap = DrawLineString.onClick = function (state, e) {
+  // delete previously drawn line if it exists
+  if (state.redraw && state.previousFeatureId) {
+    this.deleteFeature(state.previousFeatureId, { silent: true });
+  }
+
   if (CommonSelectors.isVertex(e)) return this.clickOnVertex(state, e);
   this.clickAnywhere(state, e);
 };
