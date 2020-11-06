@@ -23,7 +23,7 @@ Feature.prototype.setCoordinates = function(coords) {
 };
 
 Feature.prototype.getCoordinates = function(creating) {
-  return creating
+  return creating && this.type === 'LineString'
     ? JSON.parse(JSON.stringify(this.coordinates.slice(0, this.coordinates.length - 1)))
     : JSON.parse(JSON.stringify(this.coordinates));
 };

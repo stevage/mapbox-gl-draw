@@ -74,9 +74,9 @@ DrawPolygon.clickAnywhere = function(state, e) {
     lngLat.lat
   );
 
-  if (state.polygon.isValidCreation()) {
+  if (state.polygon.isCreatingValid()) {
     this.map.fire(Constants.events.CREATING, {
-      features: [state.polygon.toGeoJSON()]
+      features: [state.polygon.toGeoJSON(true)]
     });
   }
 };

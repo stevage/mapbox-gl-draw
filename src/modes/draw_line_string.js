@@ -137,7 +137,7 @@ DrawLineString.clickAnywhere = function (state, e) {
     state.line.addCoordinate(0, lngLat.lng, lngLat.lat);
   }
 
-  if (state.line.isValidCreation()) {
+  if (state.line.isCreatingValid()) {
     this.map.fire(Constants.events.CREATING, {
       features: [state.line.toGeoJSON(true)]
     });

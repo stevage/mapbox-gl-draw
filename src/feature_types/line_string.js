@@ -10,10 +10,8 @@ LineString.prototype.isValid = function() {
   return this.coordinates.length > 1;
 };
 
-// line is currently being created, so we check that it has more than 2 points
-// the last point added to the coordinates is a placeholder for the next point
-// that the user will place so we subtract it
-LineString.prototype.isValidCreation = function() {
+// remove last point added to the coordinates since it is a placeholder for the next point
+LineString.prototype.isCreatingValid = function() {
   return this.coordinates.length - 1 > 1;
 };
 

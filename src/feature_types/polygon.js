@@ -12,10 +12,9 @@ Polygon.prototype.isValid = function() {
   return this.coordinates.every(ring => ring.length > 2);
 };
 
-Polygon.prototype.isValidCreation = function() {
-  console.log(this.coordinates);
+Polygon.prototype.isCreatingValid = function() {
   if (this.coordinates.length === 0) return false;
-  return this.coordinates.every(ring => ring.length > 2);
+  return this.coordinates.every(ring => ring.length - 1 > 2);
 };
 
 // Expects valid geoJSON polygon geometry: first and last positions must be equivalent.
@@ -57,8 +56,16 @@ Polygon.prototype.getCoordinate = function(path) {
   return JSON.parse(JSON.stringify(ring[ids[1]]));
 };
 
-Polygon.prototype.getCoordinates = function() {
-  return this.coordinates.map(coords => coords.concat([coords[0]]));
+Polygon.prototype.getCoordinates = function(creating) {
+  return creating
+    ? JSON.parse(JSON.stringify(this.coordinates.map(coords => {
+      // remove the placeholder vertex
+      const newCoords = coords.slice();
+      newCoords.splice(newCoords.length - 2, 1);
+
+      return newCoords.concat([newCoords[0]]);
+    })))
+    : this.coordinates.map(coords => coords.concat([coords[0]]));
 };
 
 Polygon.prototype.updateCoordinate = function(path, lng, lat) {
