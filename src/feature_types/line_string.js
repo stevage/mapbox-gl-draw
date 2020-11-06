@@ -10,6 +10,11 @@ LineString.prototype.isValid = function() {
   return this.coordinates.length > 1;
 };
 
+// remove last point added to the coordinates since it is a placeholder for the next point
+LineString.prototype.isCreatingValid = function() {
+  return this.coordinates.length - 1 > 1;
+};
+
 LineString.prototype.addCoordinate = function(path, lng, lat) {
   this.changed();
   const id = parseInt(path, 10);

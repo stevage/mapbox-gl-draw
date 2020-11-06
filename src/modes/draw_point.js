@@ -45,6 +45,8 @@ DrawPoint.onSetup = function(opts = {}) {
 };
 
 DrawPoint.stopDrawingAndRemove = function(state) {
+  if (state.redraw) return;
+
   this.deleteFeature([state.point.id], { silent: true });
   this.changeMode(Constants.modes.SIMPLE_SELECT);
 };
@@ -98,6 +100,8 @@ DrawPoint.toDisplayFeatures = function(state, geojson, display) {
 DrawPoint.onTrash = DrawPoint.stopDrawingAndRemove;
 
 DrawPoint.onKeyUp = function(state, e) {
+  if (state.redraw) return;
+
   if (CommonSelectors.isEscapeKey(e) || CommonSelectors.isEnterKey(e)) {
     return this.stopDrawingAndRemove(state, e);
   }

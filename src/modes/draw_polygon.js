@@ -73,6 +73,12 @@ DrawPolygon.clickAnywhere = function(state, e) {
     lngLat.lng,
     lngLat.lat
   );
+
+  if (state.polygon.isCreatingValid()) {
+    this.map.fire(Constants.events.CREATING, {
+      features: [state.polygon.toGeoJSON(true)]
+    });
+  }
 };
 
 DrawPolygon.clickOnVertex = function(state) {
@@ -81,11 +87,11 @@ DrawPolygon.clickOnVertex = function(state) {
       previousFeatureId: state.polygon.id,
       redraw: true
     });
-  } else {
-    return this.changeMode(Constants.modes.SIMPLE_SELECT, {
-      featureIds: [state.polygon.id]
-    });
   }
+
+  return this.changeMode(Constants.modes.SIMPLE_SELECT, {
+    featureIds: [state.polygon.id]
+  });
 };
 
 DrawPolygon.onMouseMove = function(state, e) {
@@ -111,6 +117,8 @@ DrawPolygon.onTap = DrawPolygon.onClick = function(state, e) {
 };
 
 DrawPolygon.onKeyUp = function(state, e) {
+  if (state.redraw) return;
+
   if (CommonSelectors.isEscapeKey(e)) {
     this.deleteFeature([state.polygon.id], { silent: true });
     this.changeMode(Constants.modes.SIMPLE_SELECT);
@@ -211,6 +219,8 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
 };
 
 DrawPolygon.onTrash = function(state) {
+  if (state.redraw) return;
+
   this.deleteFeature([state.polygon.id], { silent: true });
   this.changeMode(Constants.modes.SIMPLE_SELECT);
 };

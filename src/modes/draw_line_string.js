@@ -136,6 +136,12 @@ DrawLineString.clickAnywhere = function (state, e) {
   } else {
     state.line.addCoordinate(0, lngLat.lng, lngLat.lat);
   }
+
+  if (state.line.isCreatingValid()) {
+    this.map.fire(Constants.events.CREATING, {
+      features: [state.line.toGeoJSON(true)]
+    });
+  }
 };
 
 DrawLineString.clickOnVertex = function (state) {
@@ -144,11 +150,11 @@ DrawLineString.clickOnVertex = function (state) {
       previousFeatureId: state.line.id,
       redraw: true
     });
-  } else {
-    return this.changeMode(Constants.modes.SIMPLE_SELECT, {
-      featureIds: [state.line.id]
-    });
   }
+
+  return this.changeMode(Constants.modes.SIMPLE_SELECT, {
+    featureIds: [state.line.id]
+  });
 };
 
 DrawLineString.onMouseMove = function (state, e) {
@@ -174,6 +180,8 @@ DrawLineString.onTap = DrawLineString.onClick = function (state, e) {
 };
 
 DrawLineString.onKeyUp = function (state, e) {
+  if (state.redraw) return;
+
   if (CommonSelectors.isEnterKey(e)) {
     this.changeMode(Constants.modes.SIMPLE_SELECT, {
       featureIds: [state.line.id]
@@ -204,6 +212,8 @@ DrawLineString.onStop = function (state) {
 };
 
 DrawLineString.onTrash = function (state) {
+  if (state.redraw) return;
+
   this.deleteFeature([state.line.id], { silent: true });
   this.changeMode(Constants.modes.SIMPLE_SELECT);
 };
