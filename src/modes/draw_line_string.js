@@ -180,6 +180,8 @@ DrawLineString.onTap = DrawLineString.onClick = function (state, e) {
 };
 
 DrawLineString.onKeyUp = function (state, e) {
+  if (state.redraw) return;
+
   if (CommonSelectors.isEnterKey(e)) {
     this.changeMode(Constants.modes.SIMPLE_SELECT, {
       featureIds: [state.line.id]
@@ -210,6 +212,8 @@ DrawLineString.onStop = function (state) {
 };
 
 DrawLineString.onTrash = function (state) {
+  if (state.redraw) return;
+
   this.deleteFeature([state.line.id], { silent: true });
   this.changeMode(Constants.modes.SIMPLE_SELECT);
 };

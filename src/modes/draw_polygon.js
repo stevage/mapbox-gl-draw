@@ -117,6 +117,8 @@ DrawPolygon.onTap = DrawPolygon.onClick = function(state, e) {
 };
 
 DrawPolygon.onKeyUp = function(state, e) {
+  if (state.redraw) return;
+
   if (CommonSelectors.isEscapeKey(e)) {
     this.deleteFeature([state.polygon.id], { silent: true });
     this.changeMode(Constants.modes.SIMPLE_SELECT);
@@ -217,6 +219,8 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
 };
 
 DrawPolygon.onTrash = function(state) {
+  if (state.redraw) return;
+
   this.deleteFeature([state.polygon.id], { silent: true });
   this.changeMode(Constants.modes.SIMPLE_SELECT);
 };
