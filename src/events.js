@@ -165,7 +165,6 @@ module.exports = function (ctx) {
     !(code === 8 || code === 46 || (code >= 48 && code <= 57));
 
   events.keydown = function (event) {
-    if (ctx.api.getMode() === Constants.modes.STATIC) return;
     if ((event.srcElement || event.target).classList[0] !== "mapboxgl-canvas")
       return; // we only handle events on the map
 
@@ -187,7 +186,6 @@ module.exports = function (ctx) {
   };
 
   events.keyup = function (event) {
-    if (ctx.api.getMode() === Constants.modes.STATIC) return;
     if (isKeyModeValid(event.keyCode)) {
       currentMode.keyup(event);
     }
