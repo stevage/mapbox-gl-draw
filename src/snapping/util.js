@@ -1,4 +1,4 @@
-const turf = require("@turf/turf");
+const turfDistance = require("@turf/distance").default;
 
 const LINE_TYPES = ["line", "fill", "fill-extrusion"];
 const CIRCLE_TYPES = ["circle", "symbol"];
@@ -21,8 +21,8 @@ const shouldSnapToVertex = (
   enpoint,
   vertexPullFactor
 ) => {
-  const smallerDistance = turf.distance(hoverPoint, nearestPoint);
-  const largerDistance = turf.distance(hoverPoint, enpoint);
+  const smallerDistance = turfDistance(hoverPoint, nearestPoint);
+  const largerDistance = turfDistance(hoverPoint, enpoint);
   return largerDistance / smallerDistance < vertexPullFactor;
 };
 
