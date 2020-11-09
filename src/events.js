@@ -52,6 +52,9 @@ module.exports = function (ctx) {
     if (button === 1) {
       return events.mousedrag(event);
     }
+
+    if (ctx.api.getMode === Constants.modes.STATIC) return;
+
     const target = CM.setCursor(event, "mousemove");
     event.featureTarget = target;
     currentMode.mousemove(event);
