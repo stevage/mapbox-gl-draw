@@ -22,6 +22,7 @@ module.exports = function (ctx) {
   let currentMode = null;
 
   events.drag = function (event, isDrag) {
+    if (ctx.api.getMode() === Constants.modes.STATIC) return;
     if (
       isDrag({
         point: event.point,
@@ -37,23 +38,25 @@ module.exports = function (ctx) {
   };
 
   events.mousedrag = function (event) {
-    events.drag(event, (endInfo) => !isClick(mouseDownInfo, endInfo));
+    if (ctx.api.getMode() === Constants.modes.STATIC) return;
+    events.drag(event, endInfo => !isClick(mouseDownInfo, endInfo));
   };
 
   events.touchdrag = function (event) {
-    events.drag(event, (endInfo) => !isTap(touchStartInfo, endInfo));
+    if (ctx.api.getMode() === Constants.modes.STATIC) return;
+    events.drag(event, endInfo => !isTap(touchStartInfo, endInfo));
   };
 
   events.mousemove = function (event) {
+    if (ctx.api.getMode() === Constants.modes.STATIC) return;
+
     const button =
-      event.originalEvent.buttons !== undefined
-        ? event.originalEvent.buttons
-        : event.originalEvent.which;
+      event.originalEvent.buttons !== undefined ? event.originalEvent.buttons : event.originalEvent.which;
+
     if (button === 1) {
       return events.mousedrag(event);
     }
 
-    if (ctx.api.getMode === Constants.modes.STATIC) return;
 
     const target = CM.setCursor(event, "mousemove");
     event.featureTarget = target;
@@ -61,6 +64,8 @@ module.exports = function (ctx) {
   };
 
   events.mousedown = function (event) {
+    if (ctx.api.getMode() === Constants.modes.STATIC) return;
+
     mouseDownInfo = {
       time: new Date().getTime(),
       point: event.point,
@@ -72,6 +77,8 @@ module.exports = function (ctx) {
   };
 
   events.mouseup = function (event) {
+    if (ctx.api.getMode() === Constants.modes.STATIC) return;
+
     const target = CM.setCursor(event, "mouseup");
     event.featureTarget = target;
 
@@ -98,10 +105,12 @@ module.exports = function (ctx) {
   };
 
   events.mouseout = function (event) {
+    if (ctx.api.getMode() === Constants.modes.STATIC) return;
     currentMode.mouseout(event);
   };
 
   events.touchstart = function (event) {
+    if (ctx.api.getMode() === Constants.modes.STATIC) return;
     // Prevent emulated mouse events because we will fully handle the touch here.
     // This does not stop the touch events from propogating to mapbox though.
     event.originalEvent.preventDefault();
@@ -119,6 +128,7 @@ module.exports = function (ctx) {
   };
 
   events.touchmove = function (event) {
+    if (ctx.api.getMode() === Constants.modes.STATIC) return;
     event.originalEvent.preventDefault();
     if (!ctx.options.touchEnabled) {
       return;
@@ -129,6 +139,7 @@ module.exports = function (ctx) {
   };
 
   events.touchend = function (event) {
+    if (ctx.api.getMode() === Constants.modes.STATIC) return;
     event.originalEvent.preventDefault();
     if (!ctx.options.touchEnabled) {
       return;
@@ -154,6 +165,7 @@ module.exports = function (ctx) {
     !(code === 8 || code === 46 || (code >= 48 && code <= 57));
 
   events.keydown = function (event) {
+    if (ctx.api.getMode() === Constants.modes.STATIC) return;
     if ((event.srcElement || event.target).classList[0] !== "mapboxgl-canvas")
       return; // we only handle events on the map
 
@@ -175,6 +187,7 @@ module.exports = function (ctx) {
   };
 
   events.keyup = function (event) {
+    if (ctx.api.getMode() === Constants.modes.STATIC) return;
     if (isKeyModeValid(event.keyCode)) {
       currentMode.keyup(event);
     }

@@ -1,16 +1,16 @@
 const featuresAt = require("./features_at");
 const cursors = require("../constants").cursors;
 
-const defaultCursorSelector = ({overFeatures}) => {
+const defaultCursorSelector = ({ overFeatures }) => {
   return overFeatures ? cursors.POINTER : cursors.GRAB;
-}
+};
 
 class CursorManager {
   constructor(ctx) {
     this.ctx = ctx;
     this.snapped = false;
-    this.mode = null
-    this.cursor
+    this.mode = null;
+    this.cursor = '';
     ctx.setGetCursorTypeLogic = this.setGetCursorTypeLogic;
     this.init();
   }
@@ -19,33 +19,35 @@ class CursorManager {
     this.ctx.map.on("draw.snapped", ({ snapped }) => {
       this.snapped = snapped;
     });
-    this.ctx.api.overrideGetCursorTypeLogic = this.overrideGetCursorTypeLogic
+    this.ctx.api.overrideGetCursorTypeLogic = this.overrideGetCursorTypeLogic;
   }
 
   setCursor(event, eventType) {
     const glDrawFeats = featuresAt.click(event, null, this.ctx);
     const allFeatures = featuresAt
       .any(event, null, this.ctx)
-      .filter(l => !l.layer.id.includes("snap"));
+      .filter((l) => !l.layer.id.includes("snap"));
 
-    let cursorType
-    if(this.overridedGetCursorType){
+    let cursorType;
+    if (this.overridedGetCursorType) {
       cursorType = this.overridedGetCursorType({
         snapped: this.snapped,
         isOverSelected: Boolean(glDrawFeats[0]),
-        overFeatures: allFeatures.length > 0 ? allFeatures : null
-      })
+        overFeatures: allFeatures.length > 0 ? allFeatures : null,
+      });
     } else {
-      if (eventType === 'drag') {
-        cursorType = cursors.GRABBING
+      if (eventType === "drag") {
+        cursorType = cursors.GRABBING;
       } else if (this.getCursorType) {
         cursorType = this.getCursorType({
           snapped: this.snapped,
           isOverSelected: Boolean(glDrawFeats[0]),
-          overFeatures: allFeatures.length > 0 ? allFeatures : null
-        })
+          overFeatures: allFeatures.length > 0 ? allFeatures : null,
+        });
       } else {
-        cursorType = defaultCursorSelector({ overFeatures: allFeatures.length > 0 })
+        cursorType = defaultCursorSelector({
+          overFeatures: allFeatures.length > 0,
+        });
       }
     }
 
@@ -59,7 +61,7 @@ class CursorManager {
     return glDrawFeats[0];
   }
 }
-CursorManager.prototype.overrideGetCursorTypeLogic = function(fn) {
+CursorManager.prototype.overrideGetCursorTypeLogic = function (fn) {
   if (fn) {
     CursorManager.prototype.overridedGetCursorType = fn;
   } else {
@@ -67,7 +69,7 @@ CursorManager.prototype.overrideGetCursorTypeLogic = function(fn) {
   }
 };
 
-CursorManager.prototype.setGetCursorTypeLogic = function(fn) {
+CursorManager.prototype.setGetCursorTypeLogic = function (fn) {
   if (fn) {
     CursorManager.prototype.getCursorType = fn;
   } else {
