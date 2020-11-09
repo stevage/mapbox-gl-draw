@@ -36,16 +36,16 @@ class CursorManager {
         overFeatures: allFeatures.length > 0 ? allFeatures : null
       })
     } else {
-      if(eventType === 'drag'){
+      if (eventType === 'drag') {
         cursorType = cursors.GRABBING
-      }else{
-        cursorType =
-          this.getCursorType ?
-          this.getCursorType({
-            snapped: this.snapped,
-            isOverSelected: Boolean(glDrawFeats[0]),
-            overFeatures: allFeatures.length > 0 ? allFeatures : null
-          }) : defaultCursorSelector({overFeatures: allFeatures.length > 0})
+      } else if (this.getCursorType) {
+        cursorType = this.getCursorType({
+          snapped: this.snapped,
+          isOverSelected: Boolean(glDrawFeats[0]),
+          overFeatures: allFeatures.length > 0 ? allFeatures : null
+        })
+      } else {
+        cursorType = defaultCursorSelector({ overFeatures: allFeatures.length > 0 })
       }
     }
 
