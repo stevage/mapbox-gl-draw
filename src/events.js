@@ -1,7 +1,6 @@
 const throttle = require("lodash.throttle");
 
 const setupModeHandler = require("./lib/mode_handler");
-const getFeaturesAndSetCursor = require("./lib/get_features_and_set_cursor");
 const CursorManager = require("./lib/cursor");
 const featuresAt = require("./lib/features_at");
 const isClick = require("./lib/is_click");
@@ -21,8 +20,12 @@ module.exports = function (ctx) {
   let currentModeName = null;
   let currentMode = null;
 
+  function isStaticMode () {
+    return ctx.api.getMode() === Constants.modes.STATIC;
+  }
+
   events.drag = function (event, isDrag) {
-    if (ctx.api.getMode() === Constants.modes.STATIC) return;
+    if (isStaticMode()) return;
     if (
       isDrag({
         point: event.point,
@@ -38,17 +41,17 @@ module.exports = function (ctx) {
   };
 
   events.mousedrag = function (event) {
-    if (ctx.api.getMode() === Constants.modes.STATIC) return;
+    if (isStaticMode()) return;
     events.drag(event, endInfo => !isClick(mouseDownInfo, endInfo));
   };
 
   events.touchdrag = function (event) {
-    if (ctx.api.getMode() === Constants.modes.STATIC) return;
+    if (isStaticMode()) return;
     events.drag(event, endInfo => !isTap(touchStartInfo, endInfo));
   };
 
   events.mousemove = function (event) {
-    if (ctx.api.getMode() === Constants.modes.STATIC) return;
+    if (isStaticMode()) return;
 
     const button =
       event.originalEvent.buttons !== undefined ? event.originalEvent.buttons : event.originalEvent.which;
@@ -64,7 +67,7 @@ module.exports = function (ctx) {
   };
 
   events.mousedown = function (event) {
-    if (ctx.api.getMode() === Constants.modes.STATIC) return;
+    if (isStaticMode()) return;
 
     mouseDownInfo = {
       time: new Date().getTime(),
@@ -77,7 +80,7 @@ module.exports = function (ctx) {
   };
 
   events.mouseup = function (event) {
-    if (ctx.api.getMode() === Constants.modes.STATIC) return;
+    if (isStaticMode()) return;
 
     const target = CM.setCursor(event, "mouseup");
     event.featureTarget = target;
@@ -105,12 +108,12 @@ module.exports = function (ctx) {
   };
 
   events.mouseout = function (event) {
-    if (ctx.api.getMode() === Constants.modes.STATIC) return;
+    if (isStaticMode()) return;
     currentMode.mouseout(event);
   };
 
   events.touchstart = function (event) {
-    if (ctx.api.getMode() === Constants.modes.STATIC) return;
+    if (isStaticMode()) return;
     // Prevent emulated mouse events because we will fully handle the touch here.
     // This does not stop the touch events from propogating to mapbox though.
     event.originalEvent.preventDefault();
@@ -128,7 +131,7 @@ module.exports = function (ctx) {
   };
 
   events.touchmove = function (event) {
-    if (ctx.api.getMode() === Constants.modes.STATIC) return;
+    if (isStaticMode()) return;
     event.originalEvent.preventDefault();
     if (!ctx.options.touchEnabled) {
       return;
@@ -139,7 +142,7 @@ module.exports = function (ctx) {
   };
 
   events.touchend = function (event) {
-    if (ctx.api.getMode() === Constants.modes.STATIC) return;
+    if (isStaticMode()) return;
     event.originalEvent.preventDefault();
     if (!ctx.options.touchEnabled) {
       return;
