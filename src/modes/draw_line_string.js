@@ -137,6 +137,8 @@ DrawLineString.clickAnywhere = function (state, e) {
     state.line.addCoordinate(0, lngLat.lng, lngLat.lat);
   }
 
+  this.map.fire(Constants.events.VERTEX_PLACED, { features: [state.line.toGeoJSON()] });
+
   if (state.line.isCreatingValid()) {
     this.map.fire(Constants.events.CREATING, {
       features: [state.line.toGeoJSON(true)]
