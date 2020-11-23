@@ -8,9 +8,10 @@ const {
 const doubleClickZoom = require("../lib/double_click_zoom");
 const simplify = require("@turf/simplify").default;
 
-const { onMouseMove, ...DrawFreehandPolygon } = Object.assign({}, DrawPolygon);
+//const { onMouseMove, ...DrawFreehandPolygon } = Object.assign({}, DrawPolygon);
+const DrawFreehandPolygon = {};
 
-DrawFreehandPolygon.onSetup = function (opts) {
+DrawFreehandPolygon.onSetup = function (opts = {}) {
   const polygon = this.newFeature({
     type: geojsonTypes.FEATURE,
     properties: {},
@@ -38,10 +39,12 @@ DrawFreehandPolygon.onSetup = function (opts) {
     polygon,
     currentVertexPosition: 0,
     dragMoving: false,
+    multiple: opts.multiple,
   };
 };
 
 DrawFreehandPolygon.onDrag = DrawFreehandPolygon.onTouchMove = function (state, e) {
+  e.preventDefault();
   state.dragMoving = true;
   state.polygon.updateCoordinate(
     `0.${state.currentVertexPosition}`,
@@ -56,7 +59,9 @@ DrawFreehandPolygon.onDrag = DrawFreehandPolygon.onTouchMove = function (state, 
   );
 };
 
-DrawFreehandPolygon.onMouseUp = function (state, e) {
+DrawFreehandPolygon.onDragEnd = DrawFreehandPolygon.onMouseUp = function (state, e) {
+  e.preventDefault();
+  console.log('mouse up', state.dragMoving);
   if (state.dragMoving) {
     var tolerance = 3 / ((this.map.getZoom() - 4) * 150) - 0.001; // https://www.desmos.com/calculator/b3zi8jqskw
     simplify(state.polygon, {
@@ -70,11 +75,18 @@ DrawFreehandPolygon.onMouseUp = function (state, e) {
         features: [state.polygon.toGeoJSON()]
       });
     }
-    // this.fireUpdate();
-    // this.changeMode(modes.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
-    // this.clearSelectedFeatures();
+
+    if (state.multiple) {
+      this.changeMode(modes.DRAW_FREEHAND_POLYGON, { multiple: true });
+    } else {
+      // this.fireUpdate();
+      this.changeMode(modes.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
+      this.clearSelectedFeatures();
+    }
   }
 };
+
+DrawFreehandPolygon.toDisplayFeatures = DrawPolygon.toDisplayFeatures;
 
 DrawFreehandPolygon.onTouchEnd = function (state, e) {
   this.onMouseUp(state, e);
