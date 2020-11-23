@@ -59,6 +59,7 @@ module.exports = {
     CREATING: "draw.creating",
     DELETE: "draw.delete",
     UPDATE: "draw.update",
+    VERTEX_PLACED: "draw.vertexplaced",
     SELECTION_CHANGE: "draw.selectionchange",
     MODE_CHANGE: "draw.modechange",
     ACTIONABLE: "draw.actionable",

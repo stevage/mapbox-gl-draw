@@ -44,7 +44,8 @@ DrawPolygon.onSetup = function(opts) {
     polygon,
     currentVertexPosition: 0,
     redraw: opts.redraw,
-    previousFeatureId: opts.previousFeatureId
+    previousFeatureId: opts.previousFeatureId,
+    multiple: opts.multiple,
   };
 };
 
@@ -74,6 +75,8 @@ DrawPolygon.clickAnywhere = function(state, e) {
     lngLat.lat
   );
 
+  this.map.fire(Constants.events.VERTEX_PLACED, { features: [state.polygon.toGeoJSON()] });
+
   if (state.polygon.isCreatingValid()) {
     this.map.fire(Constants.events.CREATING, {
       features: [state.polygon.toGeoJSON(true)]
@@ -87,6 +90,10 @@ DrawPolygon.clickOnVertex = function(state) {
       previousFeatureId: state.polygon.id,
       redraw: true
     });
+  }
+
+  if (state.multiple) {
+    return this.changeMode(Constants.modes.DRAW_POLYGON, { multiple: true });
   }
 
   return this.changeMode(Constants.modes.SIMPLE_SELECT, {
@@ -139,7 +146,14 @@ DrawPolygon.onStop = function(state) {
 
   //remove last added coordinate
   state.polygon.removeCoordinate(`0.${state.currentVertexPosition}`);
-  if (state.polygon.isValid()) {
+  if (state.multiple && state.polygon.isValid()) {
+    const allFeatures = state.polygon.ctx.store._features;
+
+    this.map.fire(Constants.events.CREATE, {
+      features: Object.keys(allFeatures).map(featureId => allFeatures[featureId].toGeoJSON()),
+      newFeature: [state.polygon.toGeoJSON()]
+    });
+  } else if (state.polygon.isValid()) {
     this.map.fire(Constants.events.CREATE, {
       features: [state.polygon.toGeoJSON()]
     });
