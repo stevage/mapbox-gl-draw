@@ -43,7 +43,6 @@ DrawFreehandPolygon.onSetup = function (opts = {}) {
 };
 
 DrawFreehandPolygon.onDrag = DrawFreehandPolygon.onTouchMove = function (state, e) {
-  e.preventDefault();
   state.dragMoving = true;
   state.polygon.updateCoordinate(
     `0.${state.currentVertexPosition}`,
@@ -58,9 +57,8 @@ DrawFreehandPolygon.onDrag = DrawFreehandPolygon.onTouchMove = function (state, 
   );
 };
 
-DrawFreehandPolygon.onDragEnd = DrawFreehandPolygon.onMouseUp = function (state, e) {
-  e.preventDefault();
-  console.log('mouse up', state.dragMoving);
+DrawFreehandPolygon.onMouseUp = function (state, e) {
+  console.log('mouse up in draw freehand polygon', state.dragMoving);
   if (state.dragMoving) {
     var tolerance = 3 / ((this.map.getZoom() - 4) * 150) - 0.001; // https://www.desmos.com/calculator/b3zi8jqskw
     simplify(state.polygon, {
