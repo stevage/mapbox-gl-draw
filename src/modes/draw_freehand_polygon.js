@@ -8,13 +8,12 @@ const {
 const doubleClickZoom = require("../lib/double_click_zoom");
 const simplify = require("@turf/simplify").default;
 
-//const { onMouseMove, ...DrawFreehandPolygon } = Object.assign({}, DrawPolygon);
-const DrawFreehandPolygon = {};
+const { onMouseMove, ...DrawFreehandPolygon } = Object.assign({}, DrawPolygon);
 
 DrawFreehandPolygon.onSetup = function (opts = {}) {
   const polygon = this.newFeature({
     type: geojsonTypes.FEATURE,
-    properties: {},
+    properties: { freehand: true },
     geometry: {
       type: geojsonTypes.POLYGON,
       coordinates: [[]],
@@ -70,33 +69,16 @@ DrawFreehandPolygon.onDragEnd = DrawFreehandPolygon.onMouseUp = function (state,
       highQuality: true,
     });
 
-    if (state.polygon.isValid()) {
-      this.map.fire(events.CREATE, {
-        features: [state.polygon.toGeoJSON()]
-      });
-    }
-
     if (state.multiple) {
       this.changeMode(modes.DRAW_FREEHAND_POLYGON, { multiple: true });
     } else {
-      // this.fireUpdate();
       this.changeMode(modes.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
-      this.clearSelectedFeatures();
     }
   }
 };
 
-DrawFreehandPolygon.toDisplayFeatures = DrawPolygon.toDisplayFeatures;
-
 DrawFreehandPolygon.onTouchEnd = function (state, e) {
   this.onMouseUp(state, e);
-};
-
-DrawFreehandPolygon.fireUpdate = function () {
-  this.map.fire(events.UPDATE, {
-    action: updateActions.MOVE,
-    features: this.getSelected().map((f) => f.toGeoJSON()),
-  });
 };
 
 module.exports = DrawFreehandPolygon;
