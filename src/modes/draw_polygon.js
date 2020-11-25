@@ -114,6 +114,8 @@ DrawPolygon.onMouseMove = function(state, e) {
 };
 
 DrawPolygon.onTap = DrawPolygon.onClick = function(state, e) {
+  if (state.polygon.properties.freehand) return;
+
   // delete previously drawn polygon if it exists
   if (state.redraw && state.previousFeatureId) {
     this.deleteFeature(state.previousFeatureId, { silent: true });
@@ -146,14 +148,7 @@ DrawPolygon.onStop = function(state) {
 
   //remove last added coordinate
   state.polygon.removeCoordinate(`0.${state.currentVertexPosition}`);
-  if (state.multiple && state.polygon.isValid()) {
-    const allFeatures = state.polygon.ctx.store._features;
-
-    this.map.fire(Constants.events.CREATE, {
-      features: Object.keys(allFeatures).map(featureId => allFeatures[featureId].toGeoJSON()),
-      newFeature: [state.polygon.toGeoJSON()]
-    });
-  } else if (state.polygon.isValid()) {
+  if (state.polygon.isValid()) {
     this.map.fire(Constants.events.CREATE, {
       features: [state.polygon.toGeoJSON()]
     });

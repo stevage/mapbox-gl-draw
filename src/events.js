@@ -95,15 +95,18 @@ module.exports = function (ctx) {
         currentMode.click(event);
       }
     } else {
+      currentMode.mouseup(event);
       // Sometimes after entering a group select mode, if the user clicks while moving the mouse,
       // a drag event will be fired, even though the mouse is not being held down. This causes
       // event.featureTarget to be undefined and the draw mode to revert to normal polygon mode -
       // so instead, we revert it to static here.
-      if (event.featureTarget !== undefined) {
+      // I don't think this is needed since we force the user to hold the mouse button down
+      // when creating a group selection --Kyle
+      /* if (event.featureTarget !== undefined) {
         currentMode.mouseup(event);
       } else if (Constants.groupSelectModes.includes(currentModeName)) {
         changeMode(Constants.modes.STATIC);
-      }
+      } */
     }
   };
 
