@@ -58,7 +58,6 @@ DrawFreehandPolygon.onDrag = DrawFreehandPolygon.onTouchMove = function (state, 
 };
 
 DrawFreehandPolygon.onMouseUp = function (state, e) {
-  console.log('mouse up in draw freehand polygon', state.dragMoving);
   if (state.dragMoving) {
     var tolerance = 3 / ((this.map.getZoom() - 4) * 150) - 0.001; // https://www.desmos.com/calculator/b3zi8jqskw
     simplify(state.polygon, {

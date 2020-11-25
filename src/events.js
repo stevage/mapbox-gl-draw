@@ -69,7 +69,6 @@ module.exports = function (ctx) {
   };
 
   events.mouseup = function (event) {
-    console.log('mouse up in event', event);
     const target = CM.setCursor(event, "mouseup");
     event.featureTarget = target;
 
