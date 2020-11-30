@@ -6,6 +6,7 @@ const {
   events,
 } = require("../constants");
 const doubleClickZoom = require("../lib/double_click_zoom");
+const calculateTolerance = require("../lib/calculate_tolerance");
 const simplify = require("@turf/simplify").default;
 
 const { onMouseMove, ...DrawFreehandPolygon } = Object.assign({}, DrawPolygon);
@@ -59,10 +60,9 @@ DrawFreehandPolygon.onDrag = DrawFreehandPolygon.onTouchMove = function (state, 
 
 DrawFreehandPolygon.onMouseUp = function (state, e) {
   if (state.dragMoving) {
-    const tolerance = 3 / ((this.map.getZoom() - 4) * 150) - 0.001; // https://www.desmos.com/calculator/b3zi8jqskw
     simplify(state.polygon, {
       mutate: true,
-      tolerance: tolerance,
+      tolerance: calculateTolerance(this.map.getZoom()),
       highQuality: true,
     });
 
