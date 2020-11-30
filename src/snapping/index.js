@@ -1,4 +1,5 @@
-const turf = require("@turf/turf");
+const turfPolygonToLine = require("@turf/polygon-to-line").default;
+const turfNearestPointOnLine = require('@turf/nearest-point-on-line').default;
 const throttle = require("lodash.throttle");
 const {
   getBufferLayerId,
@@ -159,7 +160,7 @@ class Snapping {
       : newSnappedFeature.geometry;
 
     if (geometry.type === "Polygon" || geometry.type === "MultiPolygon") {
-      this.snappedGeometry = turf.polygonToLine(geometry).geometry;
+      this.snappedGeometry = turfPolygonToLine(geometry).geometry;
     } else {
       this.snappedGeometry = geometry;
     }
@@ -187,7 +188,7 @@ class Snapping {
       if (this.snappedGeometry.type === "Point") {
         snapPoint = { type: "Feature", geometry: this.snappedGeometry };
       } else {
-        snapPoint = turf.nearestPointOnLine(this.snappedGeometry, hoverPoint);
+        snapPoint = turfNearestPointOnLine(this.snappedGeometry, hoverPoint);
         const closeEnoughEnpoint = vertexIfClose(
           hoverPoint.coordinates,
           snapPoint.geometry.coordinates,
