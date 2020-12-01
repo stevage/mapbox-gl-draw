@@ -75,7 +75,7 @@ DrawLineString.onSetup = function (opts) {
   } else {
     line = this.newFeature({
       type: Constants.geojsonTypes.FEATURE,
-      properties: {},
+      properties: { selectable: !!opts.selectable },
       geometry: {
         type: Constants.geojsonTypes.LINE_STRING,
         coordinates: []

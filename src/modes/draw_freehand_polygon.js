@@ -14,7 +14,10 @@ const { onMouseMove, ...DrawFreehandPolygon } = Object.assign({}, DrawPolygon);
 DrawFreehandPolygon.onSetup = function (opts = {}) {
   const polygon = this.newFeature({
     type: geojsonTypes.FEATURE,
-    properties: { freehand: true },
+    properties: {
+      freehand: true,
+      selectable: !!opts.selectable
+    },
     geometry: {
       type: geojsonTypes.POLYGON,
       coordinates: [[]],

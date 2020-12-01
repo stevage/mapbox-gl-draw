@@ -19,7 +19,7 @@ DrawPoint.onSetup = function(opts = {}) {
 
   const point = this.newFeature({
     type: Constants.geojsonTypes.FEATURE,
-    properties: {},
+    properties: { selectable: !!opts.selectable },
     geometry: {
       type: Constants.geojsonTypes.POINT,
       coordinates: []

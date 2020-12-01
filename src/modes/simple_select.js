@@ -185,8 +185,13 @@ SimpleSelect.startOnActiveFeature = function (state, e) {
 };
 
 SimpleSelect.clickOnFeature = function (state, e) {
+  const eventFeature = e.featureTarget.properties;
+  const feature = this.getFeature(eventFeature.id);
   // This prevents a polygon drawn in freehand or marquee mode from being resized/moved.
-  if (e.featureTarget.properties.id === 'no_interact') return;
+  if (eventFeature.id === 'no_interact' ||
+    (feature.properties && feature.properties.hasOwnProperty('selectable') && !feature.properties.selectable)) {
+    return;
+  }
 
   // Stop everything
   doubleClickZoom.disable(this);

@@ -23,7 +23,7 @@ DrawPolygon.onSetup = function(opts) {
 
   const polygon = this.newFeature({
     type: Constants.geojsonTypes.FEATURE,
-    properties: {},
+    properties: { selectable: !!opts.selectable },
     geometry: {
       type: Constants.geojsonTypes.POLYGON,
       coordinates: [[]]
