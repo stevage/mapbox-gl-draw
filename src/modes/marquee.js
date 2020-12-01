@@ -6,7 +6,7 @@ const { onMouseMove, ...RectangularDraw } = Object.assign({}, DrawPolygon);
 RectangularDraw.onSetup = function () {
   const polygon = this.newFeature({
     type: geojsonTypes.FEATURE,
-    properties: {},
+    properties: { selectable: false },
     geometry: {
       type: geojsonTypes.POLYGON,
       coordinates: [[]],

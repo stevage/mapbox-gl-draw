@@ -1,4 +1,5 @@
 const CommonSelectors = require("../lib/common_selectors");
+const isSelectable = require("../lib/is_selectable");
 const Constants = require("../constants");
 const cursors = Constants.cursors;
 
@@ -19,11 +20,7 @@ DrawPoint.onSetup = function(opts = {}) {
 
   const point = this.newFeature({
     type: Constants.geojsonTypes.FEATURE,
-    properties: {
-      selectable: opts.hasOwnProperty('selectable')
-        ? !!opts.selectable
-        : true
-    },
+    properties: { selectable: isSelectable(opts) },
     geometry: {
       type: Constants.geojsonTypes.POINT,
       coordinates: []

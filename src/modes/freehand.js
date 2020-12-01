@@ -24,13 +24,11 @@ const { onMouseMove, ...FreeDraw } = Object.assign({}, DrawPolygon);
 FreeDraw.onSetup = function () {
   const polygon = this.newFeature({
     type: geojsonTypes.FEATURE,
-    properties: {},
+    properties: { selectable: false },
     geometry: {
       type: geojsonTypes.POLYGON,
       coordinates: [[]],
     },
-    // The id of the freedrawn polygon is explicitly set, so we can tell simple_select's click handler
-    // not to do anything with this feature.
     id: "no_interact",
   });
 

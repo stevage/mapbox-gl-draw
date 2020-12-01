@@ -185,11 +185,11 @@ SimpleSelect.startOnActiveFeature = function (state, e) {
 };
 
 SimpleSelect.clickOnFeature = function (state, e) {
-  const eventFeature = e.featureTarget.properties;
-  const feature = this.getFeature(eventFeature.id);
+  const featureId = e.featureTarget.properties.id;
+  const feature = this.getFeature(featureId);
   // This prevents a polygon drawn in freehand or marquee mode from being resized/moved.
-  if (eventFeature.id === 'no_interact' ||
-    (feature.properties && feature.properties.hasOwnProperty('selectable') && !feature.properties.selectable)) {
+  // always have to check for the selectable property existence cause it could be added from the api
+  if (feature.properties && feature.properties.hasOwnProperty('selectable') && !feature.properties.selectable) {
     return;
   }
 
@@ -199,7 +199,6 @@ SimpleSelect.clickOnFeature = function (state, e) {
 
   const isShiftClick = CommonSelectors.isShiftDown(e);
   const selectedFeatureIds = this.getSelectedIds();
-  const featureId = e.featureTarget.properties.id;
   const isFeatureSelected = this.isSelected(featureId);
 
   // Click (without shift) on any selected feature but a point
