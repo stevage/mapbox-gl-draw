@@ -16,7 +16,9 @@ DrawFreehandPolygon.onSetup = function (opts = {}) {
     type: geojsonTypes.FEATURE,
     properties: {
       freehand: true,
-      selectable: !!opts.selectable
+      selectable: opts.hasOwnProperty('selectable')
+        ? !!opts.selectable
+        : true
     },
     geometry: {
       type: geojsonTypes.POLYGON,
