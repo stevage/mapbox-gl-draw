@@ -3,6 +3,7 @@ const doubleClickZoom = require("../lib/double_click_zoom");
 const Constants = require("../constants");
 const isEventAtCoordinates = require("../lib/is_event_at_coordinates");
 const createVertex = require("../lib/create_vertex");
+const isSelectable = require("../lib/is_selectable");
 const cursors = Constants.cursors;
 
 
@@ -23,7 +24,7 @@ DrawPolygon.onSetup = function(opts) {
 
   const polygon = this.newFeature({
     type: Constants.geojsonTypes.FEATURE,
-    properties: {},
+    properties: { selectable: isSelectable(opts) },
     geometry: {
       type: Constants.geojsonTypes.POLYGON,
       coordinates: [[]]

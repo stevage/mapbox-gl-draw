@@ -3,6 +3,7 @@ const isEventAtCoordinates = require("../lib/is_event_at_coordinates");
 const doubleClickZoom = require("../lib/double_click_zoom");
 const Constants = require("../constants");
 const createVertex = require("../lib/create_vertex");
+const isSelectable = require("../lib/is_selectable");
 const cursors = require("../constants").cursors;
 
 const DrawLineString = {};
@@ -75,7 +76,7 @@ DrawLineString.onSetup = function (opts) {
   } else {
     line = this.newFeature({
       type: Constants.geojsonTypes.FEATURE,
-      properties: {},
+      properties: { selectable: isSelectable(opts) },
       geometry: {
         type: Constants.geojsonTypes.LINE_STRING,
         coordinates: []

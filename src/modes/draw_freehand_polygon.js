@@ -7,6 +7,7 @@ const {
 } = require("../constants");
 const doubleClickZoom = require("../lib/double_click_zoom");
 const calculateTolerance = require("../lib/calculate_tolerance");
+const isSelectable = require("../lib/is_selectable");
 const simplify = require("@turf/simplify").default;
 
 const { onMouseMove, ...DrawFreehandPolygon } = Object.assign({}, DrawPolygon);
@@ -14,7 +15,10 @@ const { onMouseMove, ...DrawFreehandPolygon } = Object.assign({}, DrawPolygon);
 DrawFreehandPolygon.onSetup = function (opts = {}) {
   const polygon = this.newFeature({
     type: geojsonTypes.FEATURE,
-    properties: { freehand: true },
+    properties: {
+      freehand: true,
+      selectable: isSelectable(opts)
+    },
     geometry: {
       type: geojsonTypes.POLYGON,
       coordinates: [[]],
