@@ -28,4 +28,4 @@ module.exports = function(options) {
   setupDraw(options, this);
 };
 
-module.exports.modes = require("./src/modes");
+module.exports.modes = Constants.modes;
