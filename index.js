@@ -28,4 +28,5 @@ module.exports = function(options) {
   setupDraw(options, this);
 };
 
-module.exports.modes = Constants.modes;
+module.exports.modes = require("./src/modes");
+module.exports.modeNames = Constants.modes;
