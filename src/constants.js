@@ -100,7 +100,6 @@ module.exports = {
     LINE: {
       INACTIVE: 'gl-draw-line-inactive',
       ACTIVE: 'gl-draw-line-active',
-      STATIC: 'gl-draw-line-static',
     },
   },
   paintProperties: {
