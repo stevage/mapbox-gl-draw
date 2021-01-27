@@ -96,4 +96,11 @@ module.exports = {
   LAT_RENDERED_MAX: 85,
   LNG_MIN: -270,
   LNG_MAX: 270,
+  layerIds: {
+    LINE: {
+      INACTIVE: 'gl-draw-line-inactive',
+      ACTIVE: 'gl-draw-line-active',
+      STATIC: 'gl-draw-line-static',
+    },
+  },
 };

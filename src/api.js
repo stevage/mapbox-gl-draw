@@ -226,5 +226,16 @@ module.exports = function(ctx, api) {
     ctx.store.setFeatureProperty(featureId, property, value);
     return api;
   };
+
+  api.updateLinePaintProperty = function({ propertyName, value } = {}) {
+    const layerIds = Object.values(Constants.layerIds.LINE)
+      .map(id => ([`${id}.hot`, `${id}.cold`]))
+      .flat();
+
+    layerIds.forEach(id => {
+      ctx.map.setPaintProperty(id, propertyName, value);
+    });
+  };
+
   return api;
 };

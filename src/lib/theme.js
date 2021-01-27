@@ -1,3 +1,5 @@
+const Constants = require('../constants');
+
 module.exports = [
   {
     'id': 'gl-draw-polygon-fill-inactive',
@@ -56,7 +58,7 @@ module.exports = [
     }
   },
   {
-    'id': 'gl-draw-line-inactive',
+    'id': Constants.layerIds.LINE.INACTIVE,
     'type': 'line',
     'filter': ['all',
       ['==', 'active', 'false'],
@@ -74,7 +76,7 @@ module.exports = [
     }
   },
   {
-    'id': 'gl-draw-line-active',
+    'id': Constants.layerIds.LINE.ACTIVE,
     'type': 'line',
     'filter': ['all',
       ['==', '$type', 'LineString'],
@@ -197,7 +199,7 @@ module.exports = [
     }
   },
   {
-    'id': 'gl-draw-line-static',
+    'id': Constants.layerIds.LINE.STATIC,
     'type': 'line',
     'filter': ['all', ['==', 'mode', 'static'], ['==', '$type', 'LineString']],
     'layout': {
