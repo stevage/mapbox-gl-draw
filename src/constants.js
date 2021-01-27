@@ -103,4 +103,11 @@ module.exports = {
       STATIC: 'gl-draw-line-static',
     },
   },
+  paintProperties: {
+    LINE: {
+      WIDTH: 5,
+      COLOR: '#FFD300',
+      OPACITY: 0.7,
+    },
+  },
 };
