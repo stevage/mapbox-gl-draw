@@ -70,9 +70,9 @@ module.exports = [
       'line-join': 'round'
     },
     'paint': {
-      'line-color': '#FFD300',
-      'line-width': 5,
-      'line-opacity': 0.7
+      'line-color': Constants.paintProperties.LINE.COLOR,
+      'line-width': Constants.paintProperties.LINE.WIDTH,
+      'line-opacity': Constants.paintProperties.LINE.OPACITY,
     }
   },
   {
@@ -87,9 +87,9 @@ module.exports = [
       'line-join': 'round'
     },
     'paint': {
-      'line-color': '#FFD300',
-      'line-width': 5,
-      'line-opacity': 0.7
+      'line-color': Constants.paintProperties.LINE.COLOR,
+      'line-width': Constants.paintProperties.LINE.WIDTH,
+      'line-opacity': Constants.paintProperties.LINE.OPACITY,
     }
   },
   {
@@ -199,7 +199,7 @@ module.exports = [
     }
   },
   {
-    'id': Constants.layerIds.LINE.STATIC,
+    'id': 'gl-draw-line-static',
     'type': 'line',
     'filter': ['all', ['==', 'mode', 'static'], ['==', '$type', 'LineString']],
     'layout': {
@@ -209,7 +209,7 @@ module.exports = [
     'paint': {
       'line-color': '#404040',
       'line-width': 5,
-      'line-opacity': 0
+      'line-opacity': 0,
     }
   },
   {

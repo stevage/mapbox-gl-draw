@@ -227,13 +227,23 @@ module.exports = function(ctx, api) {
     return api;
   };
 
-  api.updateLinePaintProperty = function({ propertyName, value } = {}) {
+  api.updateLineWidthProperty = function(value) {
     const layerIds = Object.values(Constants.layerIds.LINE)
       .map(id => ([`${id}.hot`, `${id}.cold`]))
       .flat();
 
     layerIds.forEach(id => {
-      ctx.map.setPaintProperty(id, propertyName, value);
+      ctx.map.setPaintProperty(id, 'line-width', value);
+    });
+  };
+
+  api.resetLineWidthProperty = function() {
+    const layerIds = Object.values(Constants.layerIds.LINE)
+      .map(id => ([`${id}.hot`, `${id}.cold`]))
+      .flat();
+
+    layerIds.forEach(id => {
+      ctx.map.setPaintProperty(id, 'line-width', Constants.paintProperties.LINE.WIDTH);
     });
   };
 
