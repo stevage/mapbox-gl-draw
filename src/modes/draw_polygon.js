@@ -44,9 +44,10 @@ DrawPolygon.onSetup = function(opts) {
   return {
     polygon,
     currentVertexPosition: 0,
-    redraw: opts.redraw,
-    previousFeatureId: opts.previousFeatureId,
+    ignoreDeleteKey: opts.ignoreDeleteKey,
     multiple: opts.multiple,
+    previousFeatureId: opts.previousFeatureId,
+    redraw: opts.redraw,
   };
 };
 
@@ -124,19 +125,6 @@ DrawPolygon.onTap = DrawPolygon.onClick = function(state, e) {
 
   if (CommonSelectors.isVertex(e)) return this.clickOnVertex(state, e);
   return this.clickAnywhere(state, e);
-};
-
-DrawPolygon.onKeyUp = function(state, e) {
-  if (state.redraw) return;
-
-  if (CommonSelectors.isEscapeKey(e)) {
-    this.deleteFeature([state.polygon.id], { silent: true });
-    this.changeMode(Constants.modes.SIMPLE_SELECT);
-  } else if (CommonSelectors.isEnterKey(e)) {
-    this.changeMode(Constants.modes.SIMPLE_SELECT, {
-      featureIds: [state.polygon.id]
-    });
-  }
 };
 
 DrawPolygon.onStop = function(state) {
@@ -229,7 +217,7 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
 };
 
 DrawPolygon.onTrash = function(state) {
-  if (state.redraw) return;
+  if (state.redraw || state.ignoreDeleteKey) return;
 
   this.deleteFeature([state.polygon.id], { silent: true });
   this.changeMode(Constants.modes.SIMPLE_SELECT);

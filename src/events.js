@@ -180,14 +180,6 @@ module.exports = function (ctx) {
     ) {
       event.preventDefault();
       currentMode.trash();
-    } else if (isKeyModeValid(event.keyCode)) {
-      currentMode.keydown(event);
-    } else if (event.keyCode === 49 && ctx.options.controls.point) {
-      changeMode(Constants.modes.DRAW_POINT);
-    } else if (event.keyCode === 50 && ctx.options.controls.line_string) {
-      changeMode(Constants.modes.DRAW_LINE_STRING);
-    } else if (event.keyCode === 51 && ctx.options.controls.polygon) {
-      changeMode(Constants.modes.DRAW_POLYGON);
     }
   };
 
