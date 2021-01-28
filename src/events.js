@@ -167,8 +167,7 @@ module.exports = function (ctx) {
 
   // 8 - Backspace
   // 46 - Delete
-  const isKeyModeValid = (code) =>
-    !(code === 8 || code === 46 || (code >= 48 && code <= 57));
+  const isKeyModeValid = (code) => !(code === 8 || code === 46);
 
   events.keydown = function (event) {
     if ((event.srcElement || event.target).classList[0] !== "mapboxgl-canvas")
