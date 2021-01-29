@@ -6,6 +6,7 @@ const stringSetsAreEqual = require("./lib/string_sets_are_equal");
 const geojsonhint = require("@mapbox/geojsonhint");
 const Constants = require("./constants");
 const StringSet = require("./lib/string_set");
+const { linePaintProperties } = require('./utils');
 
 const featureTypes = {
   Polygon: require("./feature_types/polygon"),
@@ -226,5 +227,14 @@ module.exports = function(ctx, api) {
     ctx.store.setFeatureProperty(featureId, property, value);
     return api;
   };
+
+  api.updateLineWidthProperty = function(value) {
+    linePaintProperties.updateLineWidth(ctx, value);
+  };
+
+  api.resetLineWidthProperty = function() {
+    linePaintProperties.updateLineWidth(ctx, Constants.paintProperties.LINE.WIDTH);
+  };
+
   return api;
 };

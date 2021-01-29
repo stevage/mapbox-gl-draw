@@ -1,3 +1,5 @@
+const Constants = require('../constants');
+
 module.exports = [
   {
     'id': 'gl-draw-polygon-fill-inactive',
@@ -56,7 +58,7 @@ module.exports = [
     }
   },
   {
-    'id': 'gl-draw-line-inactive',
+    'id': Constants.layerIds.LINE.INACTIVE,
     'type': 'line',
     'filter': ['all',
       ['==', 'active', 'false'],
@@ -68,13 +70,13 @@ module.exports = [
       'line-join': 'round'
     },
     'paint': {
-      'line-color': '#FFD300',
-      'line-width': 5,
-      'line-opacity': 0.7
+      'line-color': Constants.paintProperties.LINE.COLOR,
+      'line-width': Constants.paintProperties.LINE.WIDTH,
+      'line-opacity': Constants.paintProperties.LINE.OPACITY,
     }
   },
   {
-    'id': 'gl-draw-line-active',
+    'id': Constants.layerIds.LINE.ACTIVE,
     'type': 'line',
     'filter': ['all',
       ['==', '$type', 'LineString'],
@@ -85,9 +87,9 @@ module.exports = [
       'line-join': 'round'
     },
     'paint': {
-      'line-color': '#FFD300',
-      'line-width': 5,
-      'line-opacity': 0.7
+      'line-color': Constants.paintProperties.LINE.COLOR,
+      'line-width': Constants.paintProperties.LINE.WIDTH,
+      'line-opacity': Constants.paintProperties.LINE.OPACITY,
     }
   },
   {
@@ -207,7 +209,7 @@ module.exports = [
     'paint': {
       'line-color': '#404040',
       'line-width': 5,
-      'line-opacity': 0
+      'line-opacity': 0,
     }
   },
   {

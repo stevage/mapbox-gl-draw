@@ -95,11 +95,12 @@ DrawLineString.onSetup = function (opts) {
   });
 
   return {
-    line,
     currentVertexPosition,
     direction,
+    ignoreDeleteKey: opts.ignoreDeleteKey,
+    line,
+    previousFeatureId: opts.previousFeatureId,
     redraw: opts.redraw,
-    previousFeatureId: opts.previousFeatureId
   };
 };
 
@@ -182,19 +183,6 @@ DrawLineString.onTap = DrawLineString.onClick = function (state, e) {
   this.clickAnywhere(state, e);
 };
 
-DrawLineString.onKeyUp = function (state, e) {
-  if (state.redraw) return;
-
-  if (CommonSelectors.isEnterKey(e)) {
-    this.changeMode(Constants.modes.SIMPLE_SELECT, {
-      featureIds: [state.line.id]
-    });
-  } else if (CommonSelectors.isEscapeKey(e)) {
-    this.deleteFeature([state.line.id], { silent: true });
-    this.changeMode(Constants.modes.SIMPLE_SELECT);
-  }
-};
-
 DrawLineString.onStop = function (state) {
   doubleClickZoom.enable(this);
   this.activateUIButton();
@@ -215,7 +203,7 @@ DrawLineString.onStop = function (state) {
 };
 
 DrawLineString.onTrash = function (state) {
-  if (state.redraw) return;
+  if (state.redraw || state.ignoreDeleteKey) return;
 
   this.deleteFeature([state.line.id], { silent: true });
   this.changeMode(Constants.modes.SIMPLE_SELECT);
