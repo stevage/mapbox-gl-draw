@@ -16,15 +16,24 @@ Polygon.prototype.isValid = function() {
 
 Polygon.prototype.isCreatingValid = function() {
   if (this.coordinates.length === 0) return false;
-  return this.coordinates.every(ring => {
+  const isValid = this.coordinates.every(ring => {
+    console.log('ring', ring);
+       
     let polyCoords = [];
 
     if (ring.length >= 4) {
-      polyCoords = [ring.slice(0, ring.length - 1).concat([ring[0]])];
+      polyCoords = ring.slice(0, ring.length - 1).concat([ring[0]]);
     }
 
-    return polyCoords.length >= 4 && unkinkPolygon(polygon([ring])).features.length === 1;
+    if (polyCoords.length >= 4) {
+      console.log(polyCoords.length >= 4, unkinkPolygon(polygon([polyCoords])).features, unkinkPolygon(polygon([polyCoords])).features.length === 1);
+    }
+
+    return polyCoords.length >= 4 && unkinkPolygon(polygon([polyCoords])).features.length === 1;
   });
+
+  console.log(isValid);
+  return isValid;
 };
 
 // Expects valid geoJSON polygon geometry: first and last positions must be equivalent.

@@ -64,7 +64,7 @@ DrawPolygon.clickAnywhere = function(state, e) {
     });
   }
 
-  console.log(state.polygon);
+  console.log('draw polygon', state.polygon.coordinates[0].length >= 4, state.polygon.coordinates, !state.polygon.isCreatingValid());
   if (state.polygon.coordinates[0].length >= 4 && !state.polygon.isCreatingValid()) {
     return;
   }
