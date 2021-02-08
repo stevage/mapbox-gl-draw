@@ -1,3 +1,5 @@
+const { polygon } = require('@turf/helpers');
+const unkinkPolygon = require('@turf/unkink-polygon').default;
 const Feature = require('./feature');
 
 const Polygon = function(ctx, geojson) {
@@ -14,7 +16,15 @@ Polygon.prototype.isValid = function() {
 
 Polygon.prototype.isCreatingValid = function() {
   if (this.coordinates.length === 0) return false;
-  return this.coordinates.every(ring => ring.length - 1 > 2);
+  return this.coordinates.every(ring => {
+    let polyCoords = [];
+
+    if (ring.length >= 4) {
+      polyCoords = [ring.slice(0, ring.length - 1).concat([ring[0]])];
+    }
+
+    return polyCoords.length >= 4 && unkinkPolygon(polygon([ring])).features.length === 1;
+  });
 };
 
 // Expects valid geoJSON polygon geometry: first and last positions must be equivalent.

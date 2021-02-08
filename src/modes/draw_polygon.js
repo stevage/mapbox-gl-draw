@@ -63,6 +63,12 @@ DrawPolygon.clickAnywhere = function(state, e) {
       featureIds: [state.polygon.id]
     });
   }
+
+  console.log(state.polygon);
+  if (state.polygon.coordinates[0].length >= 4 && !state.polygon.isCreatingValid()) {
+    return;
+  }
+
   this.updateUIClasses({ mouse: Constants.cursors.ADD });
   const lngLat = this._ctx.snapping.snapCoord(e);
   state.polygon.updateCoordinate(
@@ -78,11 +84,9 @@ DrawPolygon.clickAnywhere = function(state, e) {
   );
 
   this.map.fire(Constants.events.VERTEX_PLACED, { features: [state.polygon.toGeoJSON()] });
-
+  
   if (state.polygon.isCreatingValid()) {
-    this.map.fire(Constants.events.CREATING, {
-      features: [state.polygon.toGeoJSON(true)]
-    });
+    this.map.fire(Constants.events.CREATING, { features: [state.polygon.toGeoJSON(true)] });
   }
 };
 
