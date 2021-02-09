@@ -79,7 +79,6 @@ DrawPolygon.clickAnywhere = function(state, e) {
     });
   }
 
-  this.updateUIClasses({ mouse: Constants.cursors.ADD });
   const lngLat = this._ctx.snapping.snapCoord(e);
 
   // console.log('draw polygon', state.polygon.coordinates[0].length >= 4, state.polygon.coordinates, !state.polygon.isCreatingValid());
@@ -96,6 +95,7 @@ DrawPolygon.clickAnywhere = function(state, e) {
     }
   }
 
+  this.updateUIClasses({ mouse: Constants.cursors.ADD });
   state.polygon.updateCoordinate(
     `0.${state.currentVertexPosition}`,
     lngLat.lng,
