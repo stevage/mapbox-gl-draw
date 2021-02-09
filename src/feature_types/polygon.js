@@ -17,7 +17,7 @@ Polygon.prototype.isValid = function() {
 Polygon.prototype.isCreatingValid = function() {
   if (this.coordinates.length === 0) return false;
   const isValid = this.coordinates.every(ring => {
-    console.log('ring', ring);
+    // console.log('ring', ring);
        
     let polyCoords = [];
 
@@ -26,13 +26,13 @@ Polygon.prototype.isCreatingValid = function() {
     }
 
     if (polyCoords.length >= 4) {
-      console.log(polyCoords.length >= 4, unkinkPolygon(polygon([polyCoords])).features, unkinkPolygon(polygon([polyCoords])).features.length === 1);
+      // console.log('valid check', polyCoords.length >= 4, unkinkPolygon(polygon([polyCoords])).features, unkinkPolygon(polygon([polyCoords])).features.length === 1);
     }
 
     return polyCoords.length >= 4 && unkinkPolygon(polygon([polyCoords])).features.length === 1;
   });
 
-  console.log(isValid);
+  console.log('valid?', isValid);
   return isValid;
 };
 

@@ -1,3 +1,5 @@
+const { polygon } = require('@turf/helpers');
+const unkinkPolygon = require('@turf/unkink-polygon').default;
 const CommonSelectors = require("../lib/common_selectors");
 const doubleClickZoom = require("../lib/double_click_zoom");
 const Constants = require("../constants");
@@ -6,8 +8,20 @@ const createVertex = require("../lib/create_vertex");
 const isSelectable = require("../lib/is_selectable");
 const cursors = Constants.cursors;
 
-
 const DrawPolygon = {};
+
+function isPolygonSelfIntersecting(polygonCoords) {
+  return polygonCoords.every(ring => {
+    let polyCoords = [];
+
+    console.log('intersect coords', ring, unkinkPolygon(polygon([ring])));
+    if (ring.length >= 4) {
+      // polyCoords = ring.slice(0, ring.length - 1).concat([ring[0]]);
+    }
+
+    return ring.length >= 4 && unkinkPolygon(polygon([ring])).features.length > 1;
+  });
+};
 
 DrawPolygon.onSetup = function(opts) {
   if (this._ctx.snapping) {
@@ -52,6 +66,7 @@ DrawPolygon.onSetup = function(opts) {
 };
 
 DrawPolygon.clickAnywhere = function(state, e) {
+  console.log('click anywhere fired', state.polygon.coordinates.slice().map(coord => coord.slice()));
   if (
     state.currentVertexPosition > 0 &&
     isEventAtCoordinates(
@@ -64,13 +79,23 @@ DrawPolygon.clickAnywhere = function(state, e) {
     });
   }
 
-  console.log('draw polygon', state.polygon.coordinates[0].length >= 4, state.polygon.coordinates, !state.polygon.isCreatingValid());
-  if (state.polygon.coordinates[0].length >= 4 && !state.polygon.isCreatingValid()) {
-    return;
-  }
-
   this.updateUIClasses({ mouse: Constants.cursors.ADD });
   const lngLat = this._ctx.snapping.snapCoord(e);
+
+  // console.log('draw polygon', state.polygon.coordinates[0].length >= 4, state.polygon.coordinates, !state.polygon.isCreatingValid());
+  if (state.polygon.coordinates[0].length >= 4) {
+    const prepCoords = state.polygon.coordinates.slice()[0].map((coord, i, arr) => {
+      if (i === state.polygon.coordinates[0].length - 1) {
+        return [lngLat.lng, lngLat.lat];
+      }
+      return coord;
+    }).concat([state.polygon.coordinates[0][0]]);
+
+    if (isPolygonSelfIntersecting([prepCoords])) {
+      return;
+    }
+  }
+
   state.polygon.updateCoordinate(
     `0.${state.currentVertexPosition}`,
     lngLat.lng,
