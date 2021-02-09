@@ -7,11 +7,13 @@ const Polygon = function(ctx, geojson) {
 
 Polygon.prototype = Object.create(Feature.prototype);
 
+// Checks if a polygon is valid after a user has finished placing/manipulating vertices
 Polygon.prototype.isValid = function() {
   if (this.coordinates.length === 0) return false;
   return this.coordinates.every(ring => ring.length > 2);
 };
 
+// Checks if a polygon is valid while a user is placing vertices
 Polygon.prototype.isCreatingValid = function() {
   if (this.coordinates.length === 0) return false;
   return this.coordinates.every(ring => ring.length - 1 > 2);

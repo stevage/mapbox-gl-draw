@@ -11,6 +11,7 @@ const Constants = require("../constants");
 const CommonSelectors = require("../lib/common_selectors");
 const moveFeatures = require("../lib/move_features");
 const cursors = require("../constants").cursors;
+const isPolygonSelfIntersecting = require("../lib/is_polygon_self_intersecting");
 
 const isVertex = isOfMetaType(Constants.meta.VERTEX);
 const isMidpoint = isOfMetaType(Constants.meta.MIDPOINT);
@@ -45,6 +46,7 @@ DirectSelect.stopDragging = function (state) {
   state.dragMoving = false;
   state.canDragMove = false;
   state.dragMoveLocation = null;
+  state.previousPointsOriginalCoords = [];
 };
 
 DirectSelect.onVertex = function (state, e) {
@@ -147,7 +149,8 @@ DirectSelect.onSetup = function (opts) {
     dragMoveLocation: opts.startPos || null,
     dragMoving: false,
     canDragMove: false,
-    selectedCoordPaths: opts.coordPath ? [opts.coordPath] : []
+    selectedCoordPaths: opts.coordPath ? [opts.coordPath] : [],
+    previousPointsOriginalCoords: [],
   };
 
   this._ctx.setGetCursorTypeLogic(({ snapped, overFeatures }) => {
@@ -232,6 +235,13 @@ DirectSelect.onDrag = function (state, e) {
   e.originalEvent.stopPropagation();
   let lngLat = e.lngLat;
 
+  if (state.feature.type === 'Polygon' && state.previousPointsOriginalCoords.length === 0) {
+    state.previousPointsOriginalCoords = state.selectedCoordPaths.map(path => ({
+      path,
+      coordinate: state.feature.getCoordinate(path),
+    }));
+  }
+
   if (state.selectedCoordPaths.length === 1) {
     lngLat = this._ctx.snapping.snapCoord(e);
     // following the dragVertex() path below seems to cause a lag where our point
@@ -270,6 +280,10 @@ DirectSelect.onTap = function (state, e) {
 
 DirectSelect.onTouchEnd = DirectSelect.onMouseUp = function (state) {
   if (state.dragMoving) {
+    if (state.feature.type === 'Polygon') {
+      console.log('is poly self intersecting', state.feature.coordinates);//, isPolygonSelfIntersecting(state.feature.coordinates));
+    }
+
     this.fireUpdate();
   }
   this.stopDragging(state);
