@@ -12,6 +12,7 @@ const CommonSelectors = require("../lib/common_selectors");
 const moveFeatures = require("../lib/move_features");
 const cursors = require("../constants").cursors;
 const isPolygonSelfIntersecting = require("../lib/is_polygon_self_intersecting");
+const createPolygonFromPartialRing = require("../lib/create_polygon_from_partial_ring");
 
 const isVertex = isOfMetaType(Constants.meta.VERTEX);
 const isMidpoint = isOfMetaType(Constants.meta.MIDPOINT);
@@ -280,25 +281,18 @@ DirectSelect.onTap = function (state, e) {
 
 DirectSelect.onTouchEnd = DirectSelect.onMouseUp = function (state) {
   if (state.dragMoving) {
-    let validPolygon = true;
-
     if (state.feature.type === 'Polygon') {
-      const prepCoords = state.feature.coordinates
-        .slice()[0]
-        .map(coord => coord)
-        .concat([state.feature.coordinates[0][0]]);
+      const ring = state.feature.coordinates[0];
 
-      validPolygon = !isPolygonSelfIntersecting([prepCoords]);
-    }
-
-    if (!validPolygon) {
-      state.previousPointsOriginalCoords.forEach(pt => {
-        state.feature.updateCoordinate(
-          pt.path,
-          pt.coordinate[0],
-          pt.coordinate[1],
-        );
-      });
+      if (isPolygonSelfIntersecting(createPolygonFromPartialRing(ring))) {
+        state.previousPointsOriginalCoords.forEach(pt => {
+          state.feature.updateCoordinate(
+            pt.path,
+            pt.coordinate[0],
+            pt.coordinate[1],
+          );
+        });
+      }
     }
 
     this.fireUpdate();

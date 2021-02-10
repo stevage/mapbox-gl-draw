@@ -5,18 +5,10 @@ const isEventAtCoordinates = require("../lib/is_event_at_coordinates");
 const createVertex = require("../lib/create_vertex");
 const isSelectable = require("../lib/is_selectable");
 const isPolygonSelfIntersecting = require("../lib/is_polygon_self_intersecting");
+const createPolygonFromPartialRing = require("../lib/create_polygon_from_partial_ring");
 const cursors = Constants.cursors;
 
 const DrawPolygon = {};
-
-function createPolygonFromPartialRing(ring) {
-  const polygon = ring
-    .slice()
-    .map(coord => coord)
-    .concat([ring[0]]);
-
-  return [polygon];
-}
 
 DrawPolygon.onSetup = function(opts) {
   if (this._ctx.snapping) {
