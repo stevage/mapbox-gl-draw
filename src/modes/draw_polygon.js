@@ -9,6 +9,15 @@ const cursors = Constants.cursors;
 
 const DrawPolygon = {};
 
+function createPolygonFromPartialRing(ring) {
+  const polygon = ring
+    .slice()
+    .map(coord => coord)
+    .concat([ring[0]]);
+
+  return [polygon];
+}
+
 DrawPolygon.onSetup = function(opts) {
   if (this._ctx.snapping) {
     this._ctx.snapping.setSnapToSelected(false);
@@ -65,18 +74,11 @@ DrawPolygon.clickAnywhere = function(state, e) {
   }
 
   const lngLat = this._ctx.snapping.snapCoord(e);
+  const ring = state.polygon.coordinates[0].slice();
+  ring[ring.length - 1] = [lngLat.lng, lngLat.lat];
 
-  if (state.polygon.coordinates[0].length >= 4) {
-    const prepCoords = state.polygon.coordinates.slice()[0].map((coord, i, arr) => {
-      if (i === state.polygon.coordinates[0].length - 1) {
-        return [lngLat.lng, lngLat.lat];
-      }
-      return coord;
-    }).concat([state.polygon.coordinates[0][0]]);
-
-    if (isPolygonSelfIntersecting([prepCoords])) {
-      return;
-    }
+  if (ring.length >= 4 && isPolygonSelfIntersecting(createPolygonFromPartialRing(ring))) {
+    return;
   }
 
   this.updateUIClasses({ mouse: Constants.cursors.ADD });

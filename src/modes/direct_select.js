@@ -280,8 +280,25 @@ DirectSelect.onTap = function (state, e) {
 
 DirectSelect.onTouchEnd = DirectSelect.onMouseUp = function (state) {
   if (state.dragMoving) {
+    let validPolygon = true;
+
     if (state.feature.type === 'Polygon') {
-      console.log('is poly self intersecting', state.feature.coordinates);//, isPolygonSelfIntersecting(state.feature.coordinates));
+      const prepCoords = state.feature.coordinates
+        .slice()[0]
+        .map(coord => coord)
+        .concat([state.feature.coordinates[0][0]]);
+
+      validPolygon = !isPolygonSelfIntersecting([prepCoords]);
+    }
+
+    if (!validPolygon) {
+      state.previousPointsOriginalCoords.forEach(pt => {
+        state.feature.updateCoordinate(
+          pt.path,
+          pt.coordinate[0],
+          pt.coordinate[1],
+        );
+      });
     }
 
     this.fireUpdate();
