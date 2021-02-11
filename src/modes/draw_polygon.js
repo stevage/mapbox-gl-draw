@@ -4,8 +4,9 @@ const Constants = require("../constants");
 const isEventAtCoordinates = require("../lib/is_event_at_coordinates");
 const createVertex = require("../lib/create_vertex");
 const isSelectable = require("../lib/is_selectable");
+const isPolygonSelfIntersecting = require("../lib/is_polygon_self_intersecting");
+const createPolygonFromPartialRing = require("../lib/create_polygon_from_partial_ring");
 const cursors = Constants.cursors;
-
 
 const DrawPolygon = {};
 
@@ -63,8 +64,16 @@ DrawPolygon.clickAnywhere = function(state, e) {
       featureIds: [state.polygon.id]
     });
   }
-  this.updateUIClasses({ mouse: Constants.cursors.ADD });
+
   const lngLat = this._ctx.snapping.snapCoord(e);
+  const ring = state.polygon.coordinates[0].slice();
+  ring[ring.length - 1] = [lngLat.lng, lngLat.lat];
+
+  if (ring.length >= 4 && isPolygonSelfIntersecting(createPolygonFromPartialRing(ring))) {
+    return;
+  }
+
+  this.updateUIClasses({ mouse: Constants.cursors.ADD });
   state.polygon.updateCoordinate(
     `0.${state.currentVertexPosition}`,
     lngLat.lng,
@@ -78,11 +87,9 @@ DrawPolygon.clickAnywhere = function(state, e) {
   );
 
   this.map.fire(Constants.events.VERTEX_PLACED, { features: [state.polygon.toGeoJSON()] });
-
+  
   if (state.polygon.isCreatingValid()) {
-    this.map.fire(Constants.events.CREATING, {
-      features: [state.polygon.toGeoJSON(true)]
-    });
+    this.map.fire(Constants.events.CREATING, { features: [state.polygon.toGeoJSON(true)] });
   }
 };
 

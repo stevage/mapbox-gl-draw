@@ -1,3 +1,4 @@
+const simplify = require("@turf/simplify").default;
 const DrawPolygon = require("./draw_polygon");
 const {
   geojsonTypes,
@@ -8,7 +9,7 @@ const {
 const doubleClickZoom = require("../lib/double_click_zoom");
 const calculateTolerance = require("../lib/calculate_tolerance");
 const isSelectable = require("../lib/is_selectable");
-const simplify = require("@turf/simplify").default;
+const isPolygonSelfIntersecting = require("../lib/is_polygon_self_intersecting");
 
 const { onMouseMove, ...DrawFreehandPolygon } = Object.assign({}, DrawPolygon);
 
@@ -70,7 +71,10 @@ DrawFreehandPolygon.onMouseUp = function (state, e) {
       highQuality: true,
     });
 
-    if (state.multiple) {
+    if (isPolygonSelfIntersecting(state.polygon.coordinates)) {
+      state.polygon.ctx.store.delete(state.polygon.id, { silent: true });
+      this.changeMode(modes.DRAW_FREEHAND_POLYGON, { multiple: !!state.multiple });
+    } else if (state.multiple) {
       this.changeMode(modes.DRAW_FREEHAND_POLYGON, { multiple: true });
     } else {
       this.changeMode(modes.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
