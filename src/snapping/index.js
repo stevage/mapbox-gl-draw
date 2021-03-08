@@ -1,5 +1,5 @@
 const turfPolygonToLine = require("@turf/polygon-to-line").default;
-const turfNearestPointOnLine = require('@turf/nearest-point-on-line').default;
+const turfNearestPointOnLine = require("@turf/nearest-point-on-line").default;
 const throttle = require("lodash.throttle");
 const {
   getBufferLayerId,
