@@ -186,10 +186,8 @@ class Snapping {
   }
 
   snapCoord({ lngLat }, featureFilter) {
-    if (!this.snappingEnabled) return;
-
     if (
-      this.snappedGeometry &&
+      this.snappedGeometry && this.snappingEnabled &&
       !(featureFilter && !featureFilter(this.snappedFeature))
     ) {
       const hoverPoint = {
