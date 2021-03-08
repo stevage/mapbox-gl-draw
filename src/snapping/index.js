@@ -186,6 +186,8 @@ class Snapping {
   }
 
   snapCoord({ lngLat }, featureFilter) {
+    if (!this.snappingEnabled) return;
+
     if (
       this.snappedGeometry &&
       !(featureFilter && !featureFilter(this.snappedFeature))
