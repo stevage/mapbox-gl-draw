@@ -173,7 +173,7 @@ class Snapping {
     }
 
     let geometry = newSnappedFeature.geometry;
-    if(this.fetchSourceGeometry && typeof this.fetchSourceGeometry === "function"){
+    if (typeof this.fetchSourceGeometry === "function"){
       const srcGeom = await this.fetchSourceGeometry(newSnappedFeature);
       if(srcGeom && srcGeom.type && srcGeom.coordinates.length){
         geometry = srcGeom;
