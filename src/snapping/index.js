@@ -18,6 +18,7 @@ class Snapping {
     this.snappedGeometry = null;
     this.bufferLayers = [];
     this.snapLayers = ctx.options.snapLayers;
+    this.fetchSourceGeometry = ctx.options.fetchSourceGeometry;
     this.snapFeatureFilter = ctx.options.snapFeatureFilter;
     this.snapDistance = ctx.options.snapDistance;
     this.store = ctx.store;
@@ -134,7 +135,7 @@ class Snapping {
     this._addSnapSourceAndLayer();
   }
 
-  _mouseoverHandler(e) {
+  async _mouseoverHandler(e) {
     const { x, y } = e.point;
     let snappableFeaturesNearMouse = this.map
       .queryRenderedFeatures([x, y], {
@@ -171,9 +172,13 @@ class Snapping {
       }
     }
 
-    const geometry = newSnappedFeature.properties.geojson_string ?
-      JSON.parse(newSnappedFeature.properties.geojson_string) :
-      newSnappedFeature.geometry;
+    let geometry = newSnappedFeature.geometry;
+    if (typeof this.fetchSourceGeometry === "function"){
+      const srcGeom = await this.fetchSourceGeometry(newSnappedFeature);
+      if(srcGeom && srcGeom.type && srcGeom.coordinates.length){
+        geometry = srcGeom;
+      }
+    }
 
     if (geometry.type === "Polygon" || geometry.type === "MultiPolygon") {
       this.snappedGeometry = turfPolygonToLine(geometry).geometry;
@@ -198,6 +203,7 @@ class Snapping {
       if (this.snappedGeometry.type === "Point") {
         snapPoint = { type: "Feature", geometry: this.snappedGeometry };
       } else {
+        // default to snap to the nearest point on the line:
         snapPoint = turfNearestPointOnLine(this.snappedGeometry, hoverPoint);
         const closeEnoughEnpoint = vertexIfClose(
           hoverPoint.coordinates,
@@ -206,6 +212,7 @@ class Snapping {
           this.vertexPullFactor
         );
         if (closeEnoughEnpoint) {
+          // use the endpoint if we've found that the endpoint is best:
           snapPoint = featureWrapperOnPoint(closeEnoughEnpoint);
         }
       }
