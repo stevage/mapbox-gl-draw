@@ -120,7 +120,7 @@ class Snapping {
 
   disableSnapping() {
     this.snappingEnabled = false;
-    this._snappableLayers().forEach(l => this._removeSnapBuffer(l));
+    this._snappableLayers().forEach((l) => this._removeSnapBuffer(l));
     this.map.off("mousemove", this._throttledMouseOverHandler);
     this.map.off("mouseout", this._mouseoutHandler);
     this.map.removeLayer("_snap_vertex");
@@ -129,7 +129,7 @@ class Snapping {
 
   enableSnapping() {
     this.snappingEnabled = true;
-    this._snappableLayers().forEach(l => this._addSnapBuffer(l));
+    this._snappableLayers().forEach((l) => this._addSnapBuffer(l));
     this.map.on("mousemove", this._throttledMouseOverHandler);
     this.map.on("mouseout", this._mouseoutHandler);
     this._addSnapSourceAndLayer();
@@ -139,7 +139,7 @@ class Snapping {
     const { x, y } = e.point;
     let snappableFeaturesNearMouse = this.map
       .queryRenderedFeatures([x, y], {
-        layers: this.bufferLayers.map(l => getBufferLayerId(l)),
+        layers: this.bufferLayers.map((l) => getBufferLayerId(l)),
       })
       .filter(notSelectedFeatureFilter(this.store, this.snapToSelected));
 
@@ -150,9 +150,9 @@ class Snapping {
       );
     }
 
-    const newSnappedFeature = this.snapFeatureFilter ?
-      snappableFeaturesNearMouse.find(this.snapFeatureFilter) :
-      snappableFeaturesNearMouse[0];
+    const newSnappedFeature = this.snapFeatureFilter
+      ? snappableFeaturesNearMouse.find(this.snapFeatureFilter)
+      : snappableFeaturesNearMouse[0];
 
     if (!newSnappedFeature) {
       this._mouseoutHandler();
@@ -173,9 +173,9 @@ class Snapping {
     }
 
     let geometry = newSnappedFeature.geometry;
-    if (typeof this.fetchSourceGeometry === "function"){
+    if (typeof this.fetchSourceGeometry === "function") {
       const srcGeom = await this.fetchSourceGeometry(newSnappedFeature);
-      if(srcGeom && srcGeom.type && srcGeom.coordinates.length){
+      if (srcGeom && srcGeom.type && srcGeom.coordinates.length) {
         geometry = srcGeom;
       }
     }
@@ -192,7 +192,8 @@ class Snapping {
 
   snapCoord({ lngLat }, featureFilter) {
     if (
-      this.snappedGeometry && this.snappingEnabled &&
+      this.snappedGeometry &&
+      this.snappingEnabled &&
       !(featureFilter && !featureFilter(this.snappedFeature))
     ) {
       const hoverPoint = {
@@ -240,8 +241,8 @@ class Snapping {
     if (typeof this.snapLayers === "function") {
       return this.map
         .getStyle()
-        .layers.filter(l => !l.id.match(/^_snap_/) && this.snapLayers(l))
-        .map(l => l.id);
+        .layers.filter((l) => !l.id.match(/^_snap_/) && this.snapLayers(l))
+        .map((l) => l.id);
     } else {
       return this.snapLayers || [];
     }
@@ -302,22 +303,22 @@ class Snapping {
       const newLayers = this._snappableLayers();
 
       this.bufferLayers
-        .filter(l => !newLayers.includes(l))
-        .forEach(l => this._removeSnapBuffer(l));
+        .filter((l) => !newLayers.includes(l))
+        .forEach((l) => this._removeSnapBuffer(l));
 
       newLayers
-        .filter(l => !this.bufferLayers.includes(l))
-        .forEach(l => this._addSnapBuffer(l));
+        .filter((l) => !this.bufferLayers.includes(l))
+        .forEach((l) => this._addSnapBuffer(l));
 
       newLayers
-        .filter(l => this.bufferLayers.includes(l))
+        .filter((l) => this.bufferLayers.includes(l))
         .forEach((l) => {
           this.map.setFilter(
             getBufferLayerId(l),
             this.map
               .getLayer(l)
               .filter.filter(
-                filt => !(filt instanceof Array) || filt[0] !== "!="
+                (filt) => !(filt instanceof Array) || filt[0] !== "!="
               )
           );
         });
