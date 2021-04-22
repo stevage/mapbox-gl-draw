@@ -91,13 +91,17 @@ CoincidentSelect.onSetup = async function(opts) {
     ) {
 
       let lineGeom = f.geometry;
-      if(this._ctx.options.fetchSourceGeometry && typeof this._ctx.options.fetchSourceGeometry === "function"){
-        const lineSrcGeom = await this._ctx.options.fetchSourceGeometry(f);
+      if(typeof this._ctx.options.fetchSourceGeometry === "function"){
+
+        const [ lineSrcGeom, ptSrcGeom ] = await Promise.allSettled([
+          this._ctx.options.fetchSourceGeometry(f),
+          this._ctx.options.fetchSourceGeometry({ properties: { vetro_id: state.initiallySelectedFeatureIds[0] }})
+        ]);
+
         if(lineSrcGeom && lineSrcGeom.type && lineSrcGeom.coordinates.length){
           lineGeom = lineSrcGeom;
         }
 
-        const ptSrcGeom = await this._ctx.options.fetchSourceGeometry({ properties: { vetro_id: state.initiallySelectedFeatureIds[0] }});
         if(ptSrcGeom && ptSrcGeom.type && ptSrcGeom.coordinates.length){
           feature = ptSrcGeom;
         }
