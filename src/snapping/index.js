@@ -2,9 +2,12 @@ const throttle = require("lodash.throttle");
 const debounce = require("lodash.debounce");
 const nearestPointOnLine = require("@turf/nearest-point-on-line").default;
 
-const { getBufferLayerId, getBufferLayer, notPointFilter } = require("./util");
 const {
-  DRAW_POINT,
+  getBufferLayerId,
+  getBufferLayer,
+  getFeatureFilter,
+} = require("./util");
+const {
   STATIC,
   FREEHAND,
   MARQUEE,
@@ -148,12 +151,12 @@ class Snapping {
     const selectedFeature = this.store.ctx.api.getSelected().features[0];
     const { point: mousePosition } = e;
     const { x, y } = mousePosition;
-    // prevent Point to Point snapping
-    const featureFilter =
-      (selectedFeature && selectedFeature.geometry.type === "Point") ||
-      mode === DRAW_POINT
-        ? notPointFilter
-        : () => true;
+
+    const featureFilter = getFeatureFilter(
+      selectedFeature,
+      this.snappedFeature,
+      mode
+    );
 
     const snapToFeature = this.map
       .queryRenderedFeatures([x, y], {
@@ -170,7 +173,7 @@ class Snapping {
       this._setSnapHoverState(this.snappedFeature, false);
     }
 
-    const lngLat = this.map.unproject(e.point);
+    const lngLat = this.map.unproject(mousePosition);
 
     const { lng, lat } = lngLat;
 
