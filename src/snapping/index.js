@@ -21,7 +21,8 @@ class Snapping {
     this.snappedGeometry = null;
     this.bufferLayers = [];
     this.snapLayers = ctx.options.snapLayers;
-    this.getSnapGeometry = ctx.options.getSnapGeometry;
+    this.fetchSnapGeometry = ctx.options.fetchSnapGeometry;
+    this.fetchSourceGeometry = ctx.options.fetchSourceGeometry;
     this.resetSnappingGeomCache = ctx.options.resetSnappingGeomCache;
     this.snapDistance = ctx.options.snapDistance;
     this.store = ctx.store;
@@ -40,6 +41,7 @@ class Snapping {
     this.disableSnapping = this.disableSnapping.bind(this);
     this.enableSnapping = this.enableSnapping.bind(this);
     this.resetSnappingGeomCache = this.resetSnappingGeomCache.bind(this);
+    this.fetchSourceGeometry = this.fetchSourceGeometry.bind(this);
 
     this.initialize();
     this._throttledMouseOverHandler = throttle(this._mouseoverHandler, 100);
@@ -73,6 +75,7 @@ class Snapping {
     ctx.api.disableSnapping = this.disableSnapping;
     ctx.api.enableSnapping = this.enableSnapping;
     ctx.api.resetSnappingGeomCache = this.resetSnappingGeomCache;
+    ctx.api.fetchSourceGeometry = this.fetchSourceGeometry;
   }
 
   refreshSnapLayers() {
@@ -175,7 +178,11 @@ class Snapping {
 
     const { lng, lat } = lngLat;
 
-    this.snappedGeometry = await this.getSnapGeometry(snapToFeature, lng, lat);
+    this.snappedGeometry = await this.fetchSnapGeometry(
+      snapToFeature,
+      lng,
+      lat
+    );
 
     if (!this.snappedGeometry) return;
 
