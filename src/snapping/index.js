@@ -1,5 +1,4 @@
 const throttle = require("lodash.throttle");
-const debounce = require("lodash.debounce");
 const nearestPointOnLine = require("@turf/nearest-point-on-line").default;
 
 const {
@@ -44,7 +43,6 @@ class Snapping {
 
     this.initialize();
     this._throttledMouseOverHandler = throttle(this._mouseoverHandler, 100);
-    this._debouncedGetSnapGeometry = debounce(this.getSnapGeometry, 10);
     this.attachApi(ctx);
   }
 
