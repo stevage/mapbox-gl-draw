@@ -81,7 +81,6 @@
     "@turf/distance": "^6.0.1",
     "@turf/helpers": "^6.3.0",
     "@turf/nearest-point-on-line": "^6.0.2",
-    "@turf/polygon-to-line": "^6.0.3",
     "@turf/simplify": "^5.1.5",
     "@turf/unkink-polygon": "^6.3.0",
     "hat": "0.0.3",

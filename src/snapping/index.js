@@ -1,15 +1,18 @@
-const turfPolygonToLine = require("@turf/polygon-to-line").default;
-const turfNearestPointOnLine = require("@turf/nearest-point-on-line").default;
 const throttle = require("lodash.throttle");
+const nearestPointOnLine = require("@turf/nearest-point-on-line").default;
+
 const {
   getBufferLayerId,
   getBufferLayer,
-  vertexIfClose,
-  featureWrapperOnPoint,
-  selectedFeatureIsPoint,
-  notPointFilter,
-  notSelectedFeatureFilter,
+  getFeatureFilter,
 } = require("./util");
+const {
+  STATIC,
+  FREEHAND,
+  MARQUEE,
+  DIRECT_SELECT,
+  SIMPLE_SELECT,
+} = require("../constants").modes;
 
 class Snapping {
   constructor(ctx) {
@@ -18,9 +21,8 @@ class Snapping {
     this.snappedGeometry = null;
     this.bufferLayers = [];
     this.snapLayers = ctx.options.snapLayers;
-    this.fetchSourceGeometry = ctx.options.fetchSourceGeometry;
+    this.getSnapGeometry = ctx.options.getSnapGeometry;
     this.resetSnappingGeomCache = ctx.options.resetSnappingGeomCache;
-    this.snapFeatureFilter = ctx.options.snapFeatureFilter;
     this.snapDistance = ctx.options.snapDistance;
     this.store = ctx.store;
     this.snapToSelected = false;
@@ -32,7 +34,6 @@ class Snapping {
     this._mouseoutHandler = this._mouseoutHandler.bind(this);
     this.refreshSnapLayers = this.refreshSnapLayers.bind(this);
     this.setSnapLayers = this.setSnapLayers.bind(this);
-    this.setSnapFeatureFilter = this.setSnapFeatureFilter.bind(this);
     this.clearSnapCoord = this.clearSnapCoord.bind(this);
     this.setSnapToSelected = this.setSnapToSelected.bind(this);
     this.cursorIsSnapped = this.cursorIsSnapped.bind(this);
@@ -67,7 +68,6 @@ class Snapping {
     // To whom so ever has beef with this, I'm with you, but without re-designing things on a greater scale... this is how it is.
     ctx.api.refreshSnapLayers = this.refreshSnapLayers;
     ctx.api.setSnapLayers = this.setSnapLayers;
-    ctx.api.setSnapFeatureFilter = this.setSnapFeatureFilter;
     ctx.api.clearSnapCoord = this.clearSnapCoord;
     ctx.api.cursorIsSnapped = this.cursorIsSnapped;
     ctx.api.disableSnapping = this.disableSnapping;
@@ -82,9 +82,6 @@ class Snapping {
   setSnapLayers(snapLayers) {
     this.snapLayers = snapLayers;
     this._updateSnapLayers();
-  }
-  setSnapFeatureFilter(snapFeatureFilter) {
-    this.snapFeatureFilter = snapFeatureFilter;
   }
   setSnapToSelected(shouldSnapToSelected) {
     this.snapToSelected = shouldSnapToSelected;
@@ -123,7 +120,7 @@ class Snapping {
 
   disableSnapping() {
     this.snappingEnabled = false;
-    this._snappableLayers().forEach(l => this._removeSnapBuffer(l));
+    this._snappableLayers().forEach((l) => this._removeSnapBuffer(l));
     this.map.off("mousemove", this._throttledMouseOverHandler);
     this.map.off("mouseout", this._mouseoutHandler);
     this.map.removeLayer("_snap_vertex");
@@ -132,97 +129,82 @@ class Snapping {
 
   enableSnapping() {
     this.snappingEnabled = true;
-    this._snappableLayers().forEach(l => this._addSnapBuffer(l));
+    this._snappableLayers().forEach((l) => this._addSnapBuffer(l));
     this.map.on("mousemove", this._throttledMouseOverHandler);
     this.map.on("mouseout", this._mouseoutHandler);
     this._addSnapSourceAndLayer();
   }
 
   async _mouseoverHandler(e) {
-    const { x, y } = e.point;
-    let snappableFeaturesNearMouse = this.map
-      .queryRenderedFeatures([x, y], {
-        layers: this.bufferLayers.map(l => getBufferLayerId(l)),
-      })
-      .filter(notSelectedFeatureFilter(this.store, this.snapToSelected));
-
-    //  This will prevent Point to Point snapping
-    if (selectedFeatureIsPoint(this.store)) {
-      snappableFeaturesNearMouse = snappableFeaturesNearMouse.filter(
-        notPointFilter
-      );
+    const mode = this.store.ctx.api.getMode();
+    if ([FREEHAND, MARQUEE, STATIC].includes(mode)) return;
+    if (
+      [DIRECT_SELECT, SIMPLE_SELECT].includes(mode) &&
+      this.store.ctx.map.dragPan._mousePan._enabled
+    ) {
+      return;
     }
 
-    const newSnappedFeature = this.snapFeatureFilter ?
-      snappableFeaturesNearMouse.find(this.snapFeatureFilter) :
-      snappableFeaturesNearMouse[0];
+    const bufferLayerIds = this.bufferLayers.map(getBufferLayerId);
+    const selectedFeature = this.store.ctx.api.getSelected().features[0];
+    const { point: mousePosition } = e;
+    const { x, y } = mousePosition;
 
-    if (!newSnappedFeature) {
+    const featureFilter = getFeatureFilter(
+      selectedFeature,
+      this.snappedFeature,
+      mode
+    );
+
+    const snapToFeature = this.map
+      .queryRenderedFeatures([x, y], {
+        layers: bufferLayerIds,
+      })
+      .find(featureFilter);
+
+    if (!snapToFeature) {
       this._mouseoutHandler();
       return;
     }
 
     if (this.snappedFeature) {
-      if (
-        this.snappedFeature.properties.feature_id !==
-        newSnappedFeature.properties.feature_id
-      ) {
-        // This is hit when we are snapping from one feature onto another
-        this._setSnapHoverState(this.snappedFeature, false);
-      } else {
-        // This is hit when we stay snapped to the same feature.
-        return;
-      }
+      this._setSnapHoverState(this.snappedFeature, false);
     }
 
-    let geometry = newSnappedFeature.geometry;
-    if (typeof this.fetchSourceGeometry === "function"){
-      const srcGeom = await this.fetchSourceGeometry(newSnappedFeature);
-      if(srcGeom && srcGeom.type && srcGeom.coordinates.length){
-        geometry = srcGeom;
-      }
-    }
+    const lngLat = this.map.unproject(mousePosition);
 
-    if (geometry.type === "Polygon" || geometry.type === "MultiPolygon") {
-      this.snappedGeometry = turfPolygonToLine(geometry).geometry;
-    } else {
-      this.snappedGeometry = geometry;
-    }
+    const { lng, lat } = lngLat;
 
-    this.snappedFeature = newSnappedFeature;
+    this.snappedGeometry = await this.getSnapGeometry(snapToFeature, lng, lat);
+
+    if (!this.snappedGeometry) return;
+
+    this.snappedFeature = snapToFeature;
     this._setSnapHoverState(this.snappedFeature, true);
   }
 
   snapCoord({ lngLat }, featureFilter) {
     if (
-      this.snappedGeometry && this.snappingEnabled &&
-      !(featureFilter && !featureFilter(this.snappedFeature))
+      this.snappedGeometry &&
+      this.snappingEnabled &&
+      (!featureFilter || !featureFilter(this.snappedFeature))
     ) {
       const hoverPoint = {
         type: "Point",
         coordinates: [lngLat.lng, lngLat.lat],
       };
-      let snapPoint;
-      if (this.snappedGeometry.type === "Point") {
-        snapPoint = { type: "Feature", geometry: this.snappedGeometry };
-      } else {
-        // default to snap to the nearest point on the line:
-        snapPoint = turfNearestPointOnLine(this.snappedGeometry, hoverPoint);
-        const closeEnoughEnpoint = vertexIfClose(
-          hoverPoint.coordinates,
-          snapPoint.geometry.coordinates,
-          this.snappedGeometry.coordinates,
-          this.vertexPullFactor
-        );
-        if (closeEnoughEnpoint) {
-          // use the endpoint if we've found that the endpoint is best:
-          snapPoint = featureWrapperOnPoint(closeEnoughEnpoint);
-        }
-      }
+
+      const snapPoint =
+        this.snappedGeometry.type === "Point"
+          ? { type: "Feature", geometry: this.snappedGeometry }
+          : nearestPointOnLine(this.snappedGeometry, hoverPoint);
+
       this.map
         .getSource("_snap_vertex")
         .setData({ type: "FeatureCollection", features: [snapPoint] });
+
       this.map.fire("draw.snapped", { snapped: true });
+
       return {
         lng: snapPoint.geometry.coordinates[0],
         lat: snapPoint.geometry.coordinates[1],
@@ -243,8 +225,8 @@ class Snapping {
     if (typeof this.snapLayers === "function") {
       return this.map
         .getStyle()
-        .layers.filter(l => !l.id.match(/^_snap_/) && this.snapLayers(l))
-        .map(l => l.id);
+        .layers.filter((l) => !l.id.match(/^_snap_/) && this.snapLayers(l))
+        .map((l) => l.id);
     } else {
       return this.snapLayers || [];
     }
@@ -305,22 +287,22 @@ class Snapping {
       const newLayers = this._snappableLayers();
 
       this.bufferLayers
-        .filter(l => !newLayers.includes(l))
-        .forEach(l => this._removeSnapBuffer(l));
+        .filter((l) => !newLayers.includes(l))
+        .forEach((l) => this._removeSnapBuffer(l));
 
       newLayers
-        .filter(l => !this.bufferLayers.includes(l))
-        .forEach(l => this._addSnapBuffer(l));
+        .filter((l) => !this.bufferLayers.includes(l))
+        .forEach((l) => this._addSnapBuffer(l));
 
       newLayers
-        .filter(l => this.bufferLayers.includes(l))
+        .filter((l) => this.bufferLayers.includes(l))
         .forEach((l) => {
           this.map.setFilter(
             getBufferLayerId(l),
             this.map
               .getLayer(l)
               .filter.filter(
-                filt => !(filt instanceof Array) || filt[0] !== "!="
+                (filt) => !(filt instanceof Array) || filt[0] !== "!="
               )
           );
         });

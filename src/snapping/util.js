@@ -1,5 +1,7 @@
 const turfDistance = require("@turf/distance").default;
 
+const { DRAW_POINT } = require("../constants").modes;
+
 const LINE_TYPES = ["line", "fill", "fill-extrusion"];
 const CIRCLE_TYPES = ["circle", "symbol"];
 
@@ -81,11 +83,26 @@ exports.selectedFeatureIsPoint = store => {
   return feature && feature.type === "Point";
 };
 
-exports.notPointFilter = feature => feature.geometry.type !== "Point";
+exports.notSelectedFeatureFilter = (store, snapToSelected) => (feature) =>
+  (!snapToSelected && !store._features[feature.properties.vetro_id]) ||
+  (snapToSelected && store._features[feature.properties.vetro_id]);
 
-exports.notSelectedFeatureFilter = (store, snapToSelected) => feature => {
-  return (
-    (!snapToSelected && !store._features[feature.properties.vetro_id]) ||
-    (snapToSelected && store._features[feature.properties.vetro_id])
-  );
+const notPointFilter = (feature) => feature.geometry.type !== "Point";
+const notSelfOrCurrentSnapFilter = (vetroId, snappedVetroId) => (feature) =>
+  ![snappedVetroId, feature.properties.vetro_id].includes(vetroId);
+
+exports.getFeatureFilter = (selectedFeature, snappedFeature, mode) => {
+  if (mode === DRAW_POINT) return notPointFilter;
+  if (!selectedFeature) return () => true;
+
+  const { geometry, id: vetroId } = selectedFeature;
+  const { type } = geometry;
+
+  if (type === "Point") return notPointFilter;
+
+  const { properties } = snappedFeature || {};
+  const { vetro_id: snappedVetroId } = properties || {};
+
+
+  return notSelfOrCurrentSnapFilter(vetroId, snappedVetroId);
 };
