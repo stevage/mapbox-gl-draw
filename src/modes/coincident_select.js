@@ -93,7 +93,7 @@ CoincidentSelect.onSetup = async function(opts) {
       let lineGeom = f.geometry;
       if(typeof this._ctx.options.fetchSourceGeometry === "function"){
 
-        const [ lineSrcGeom, ptSrcGeom ] = await Promise.allSettled([
+        const [ lineSrcGeom, ptSrcGeom ] = await Promise.all([
           this._ctx.options.fetchSourceGeometry(f),
           this._ctx.options.fetchSourceGeometry({ properties: { vetro_id: state.initiallySelectedFeatureIds[0] }})
         ]);
