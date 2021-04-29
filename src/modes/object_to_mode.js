@@ -33,8 +33,8 @@ module.exports = function(modeObject) {
     }
 
     return {
-      start() {
-        state = mode.onSetup(startOpts); // this should set ui buttons
+      async start() {
+        state = await mode.onSetup(startOpts); // this should set ui buttons
 
         // Adds event handlers for all event options
         // add sets the selector to false for all

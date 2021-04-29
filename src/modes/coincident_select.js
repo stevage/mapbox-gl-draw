@@ -35,7 +35,7 @@ const getAdjacentLineData = (lineCoords, pointCoord) => {
   return null;
 };
 
-CoincidentSelect.onSetup = function(opts) {
+CoincidentSelect.onSetup = async function(opts) {
   if (this._ctx.snapping) {
     this._ctx.snapping.setSnapToSelected(false);
   }
@@ -68,7 +68,7 @@ CoincidentSelect.onSetup = function(opts) {
     )
   );
 
-  const feature = this.getFeature(state.initiallySelectedFeatureIds[0]);
+  let feature = this.getFeature(state.initiallySelectedFeatureIds[0]);
   if (feature.type !== "Point") {
     return;
   }
@@ -83,13 +83,30 @@ CoincidentSelect.onSetup = function(opts) {
   const planId = features.find(f => f.properties.vetro_id === feature.id)
     .properties.plan_id;
 
-  features.forEach(f => {
+  for(const f of features){
     if (
       f.properties.plan_id === planId &&
       f.geometry.type === "LineString" &&
       !f.layer.id.includes("_snap")
     ) {
-      const lineGeom = JSON.parse(f.properties.geojson_string);
+
+      let lineGeom = f.geometry;
+      if(typeof this._ctx.options.fetchSourceGeometry === "function"){
+
+        const [ lineSrcGeom, ptSrcGeom ] = await Promise.all([
+          this._ctx.options.fetchSourceGeometry(f.properties.vetro_id),
+          this._ctx.options.fetchSourceGeometry(state.initiallySelectedFeatureIds[0])
+        ]);
+
+        if(lineSrcGeom && lineSrcGeom.type && lineSrcGeom.coordinates.length){
+          lineGeom = lineSrcGeom;
+        }
+
+        if(ptSrcGeom && ptSrcGeom.type && ptSrcGeom.coordinates.length){
+          feature = ptSrcGeom;
+        }
+      }
+
       const adjacentLineData = getAdjacentLineData(
         lineGeom.coordinates,
         feature.coordinates
@@ -105,7 +122,7 @@ CoincidentSelect.onSetup = function(opts) {
         });
       }
     }
-  });
+  }
 
   this.fireActionable();
 
