@@ -164,7 +164,7 @@ class Snapping {
         layers: bufferLayerIds,
       })
       .find(featureFilter);
-
+    
     if (!snapToFeature) {
       this._mouseoutHandler();
       return;
