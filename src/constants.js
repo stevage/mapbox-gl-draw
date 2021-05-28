@@ -53,6 +53,7 @@ module.exports = {
     STATIC: "static",
     FREEHAND: "freehand",
     MARQUEE: "marquee",
+    SPLIT: "split",
   },
   groupSelectModes: ["freehand", "marquee"],
   events: {

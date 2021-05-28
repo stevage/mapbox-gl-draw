@@ -1,6 +1,6 @@
 const turfDistance = require("@turf/distance").default;
 
-const { DRAW_POINT } = require("../constants").modes;
+const { DRAW_POINT, SPLIT } = require("../constants").modes;
 
 const LINE_TYPES = ["line", "fill", "fill-extrusion"];
 const CIRCLE_TYPES = ["circle", "symbol"];
@@ -93,6 +93,7 @@ const notSelfOrCurrentSnapFilter = (vetroId, snappedVetroId) => (feature) =>
 
 exports.getFeatureFilter = (selectedFeature, snappedFeature, mode) => {
   if (mode === DRAW_POINT) return notPointFilter;
+  if (mode === SPLIT) return () => true;
   if (!selectedFeature) return () => true;
 
   const { geometry, id: vetroId } = selectedFeature;
@@ -102,7 +103,6 @@ exports.getFeatureFilter = (selectedFeature, snappedFeature, mode) => {
 
   const { properties } = snappedFeature || {};
   const { vetro_id: snappedVetroId } = properties || {};
-
 
   return notSelfOrCurrentSnapFilter(vetroId, snappedVetroId);
 };
