@@ -149,6 +149,7 @@ DrawLineString.clickAnywhere = function (state, e) {
 };
 
 DrawLineString.clickOnVertex = function (state) {
+  // clicking on the vertex places another vertex so 2 coordinates is only 1 vertex for the line
   if (state.line.coordinates.length <= 2) {
     this.deleteFeature([state.line.id], { silent: true });
     return this.changeMode(Constants.modes.DRAW_LINE_STRING, { redraw: state.redraw });

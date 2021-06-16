@@ -94,6 +94,7 @@ DrawPolygon.clickAnywhere = function(state, e) {
 };
 
 DrawPolygon.clickOnVertex = function(state) {
+  // clicking on the vertex places another vertex so 3 coordinates is actually only 2 vertices for the polygon
   if (state.polygon.coordinates[0].length <= 3) {
     this.deleteFeature([state.polygon.id], { silent: true });
     return this.changeMode(Constants.modes.DRAW_POLYGON, { multiple: state.multiple, redraw: state.redraw });
@@ -233,17 +234,6 @@ DrawPolygon.onTrash = function(state) {
 
   this.deleteFeature([state.polygon.id], { silent: true });
   this.changeMode(Constants.modes.SIMPLE_SELECT);
-};
-
-DrawPolygon.onKeyDown = function(state, e) {
-  if (e.ctrlKey && e.keyCode === 90) {  // z
-    console.log(state, state.polygon, state.polygon.coordinates.length - 1);
-    // state.polygon.removeCoordinate('0.' + String(state.polygon.coordinates[0].length - 2));
-    // state.polygon.removeCoordinate(`0.${state.currentVertexPosition}`);
-    state.polygon.removeCoordinate(`0.${state.currentVertexPosition - 1}`);
-    // state.polygon.removeCoordinate('0.' + String(state.polygon.coordinates[0].length - 1));
-    // state.polygon.removeLastPlacedVertex();
-  }
 };
 
 module.exports = DrawPolygon;
