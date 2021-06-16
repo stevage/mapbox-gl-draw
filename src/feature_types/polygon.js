@@ -41,6 +41,7 @@ Polygon.prototype.addCoordinate = function(path, lng, lat) {
 };
 
 Polygon.prototype.removeCoordinate = function(path) {
+  console.log('path', path);
   this.changed();
   const ids = path.split('.').map(x => parseInt(x, 10));
   const ring = this.coordinates[ids[0]];
@@ -50,6 +51,18 @@ Polygon.prototype.removeCoordinate = function(path) {
       this.coordinates.splice(ids[0], 1);
     }
   }
+};
+
+Polygon.prototype.removeLastPlacedVertex = function() {
+  console.log(this);
+  this.changed();
+  const ring = this.coordinates[0];
+  console.log('old ring', ring.slice());
+  
+  if (ring.length - 2 === 0) return;
+
+  ring.splice(ring.length - 2, 2);
+  console.log('new ring', ring.slice());
 };
 
 Polygon.prototype.getCoordinate = function(path) {

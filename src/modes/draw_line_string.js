@@ -149,6 +149,11 @@ DrawLineString.clickAnywhere = function (state, e) {
 };
 
 DrawLineString.clickOnVertex = function (state) {
+  if (state.line.coordinates.length <= 2) {
+    this.deleteFeature([state.line.id], { silent: true });
+    return this.changeMode(Constants.modes.DRAW_LINE_STRING, { redraw: state.redraw });
+  }
+
   if (state.redraw) {
     return this.changeMode(Constants.modes.DRAW_LINE_STRING, {
       previousFeatureId: state.line.id,
@@ -190,8 +195,9 @@ DrawLineString.onStop = function (state) {
   // check to see if we've deleted this feature
   if (this.getFeature(state.line.id) === undefined) return;
 
-  //remove last added coordinate
+  // remove last added coordinate created by clicking on vertex to stop drawing
   state.line.removeCoordinate(`${state.currentVertexPosition}`);
+
   if (state.line.isValid()) {
     this.map.fire(Constants.events.CREATE, {
       features: [state.line.toGeoJSON()]

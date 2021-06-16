@@ -179,6 +179,8 @@ module.exports = function (ctx) {
     ) {
       event.preventDefault();
       currentMode.trash();
+    } else {
+      currentMode.keydown(event);
     }
   };
 
