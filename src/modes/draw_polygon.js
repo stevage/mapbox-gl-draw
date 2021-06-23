@@ -94,6 +94,12 @@ DrawPolygon.clickAnywhere = function(state, e) {
 };
 
 DrawPolygon.clickOnVertex = function(state) {
+  // clicking on the vertex places another vertex so 3 coordinates is actually only 2 vertices for the polygon
+  if (state.polygon.coordinates[0].length <= 3) {
+    this.deleteFeature([state.polygon.id], { silent: true });
+    return this.changeMode(Constants.modes.DRAW_POLYGON, { multiple: state.multiple, redraw: state.redraw });
+  }
+
   if (state.redraw) {
     return this.changeMode(Constants.modes.DRAW_POLYGON, {
       previousFeatureId: state.polygon.id,
