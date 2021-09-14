@@ -44,6 +44,7 @@ module.exports = {
     MULTI_POLYGON: "MultiPolygon",
   },
   modes: {
+    COINCIDENT_SELECT: "coincident_select",
     DRAW_LINE_STRING: "draw_line_string",
     DRAW_POLYGON: "draw_polygon",
     DRAW_FREEHAND_POLYGON: "draw_freehand_polygon",
@@ -99,14 +100,14 @@ module.exports = {
   LNG_MAX: 270,
   layerIds: {
     LINE: {
-      INACTIVE: 'gl-draw-line-inactive',
-      ACTIVE: 'gl-draw-line-active',
+      INACTIVE: "gl-draw-line-inactive",
+      ACTIVE: "gl-draw-line-active",
     },
   },
   paintProperties: {
     LINE: {
       WIDTH: 5,
-      COLOR: '#FFD300',
+      COLOR: "#FFD300",
       OPACITY: 0.7,
     },
   },
