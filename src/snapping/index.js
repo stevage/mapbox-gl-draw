@@ -1,10 +1,20 @@
 const throttle = require("lodash.throttle");
-const nearestPointOnLine = require("@turf/nearest-point-on-line").default;
+const getNearestPointOnLine = require("@turf/nearest-point-on-line").default;
+const turfDistance = require("@turf/distance").default;
+const {
+  point: turfPoint,
+  lineString: turfLineString,
+  featureCollection: turfFeatureCollection,
+} = require("@turf/helpers");
+const cloneDeep = require("lodash.clonedeep");
+const last = require("lodash.last");
+const turfCircle = require("@turf/circle").default;
+const { getCoord, getCoords, getType } = require("@turf/invariant");
 
 const {
   getBufferLayerId,
   getBufferLayer,
-  getFeatureFilter,
+  findVertexInCircle,
 } = require("./util");
 const {
   STATIC,
@@ -12,7 +22,15 @@ const {
   MARQUEE,
   DIRECT_SELECT,
   SIMPLE_SELECT,
+  DRAW_LINE_STRING,
+  DRAW_POLYGON,
+  COINCIDENT_SELECT,
+  DRAW_POINT,
 } = require("../constants").modes;
+
+const LINE_MODES = [DIRECT_SELECT, DRAW_LINE_STRING, DRAW_POLYGON];
+const POINT_MODES = [SIMPLE_SELECT, DRAW_POINT, COINCIDENT_SELECT];
+const MOUSEMOVE_THROTTLE_MS = 16;
 
 class Snapping {
   constructor(ctx) {
@@ -22,8 +40,14 @@ class Snapping {
     this.bufferLayers = [];
     this.snapLayers = ctx.options.snapLayers;
     this.fetchSnapGeometry = ctx.options.fetchSnapGeometry;
+    this.fetchSnapGeometries = ctx.options.fetchSnapGeometries;
+    this._updateSourceGeomCache = ctx.options._updateSourceGeomCache;
+    this._setGeomCacheIfNotExists = ctx.options._setGeomCacheIfNotExists;
     this.fetchSourceGeometry = ctx.options.fetchSourceGeometry;
+    this.fetchSourceGeometries = ctx.options.fetchSourceGeometries;
+    this.getClosestPoint = ctx.options.getClosestPoint;
     this.resetSnappingGeomCache = ctx.options.resetSnappingGeomCache;
+    this.fetchMapExtentGeometry = ctx.options.fetchMapExtentGeometry;
     this.snapDistance = ctx.options.snapDistance;
     this.store = ctx.store;
     this.snapToSelected = false;
@@ -31,7 +55,7 @@ class Snapping {
     // this is the amount the endpoints are preferenced as snap points. and is related to the angle between the hover point, the nearest point and the endpoint
     this.vertexPullFactor = Math.sqrt(2);
 
-    this._mouseoverHandler = this._mouseoverHandler.bind(this);
+    this._mouseMoveHandler = this._mouseMoveHandler.bind(this);
     this._mouseoutHandler = this._mouseoutHandler.bind(this);
     this.refreshSnapLayers = this.refreshSnapLayers.bind(this);
     this.setSnapLayers = this.setSnapLayers.bind(this);
@@ -41,10 +65,16 @@ class Snapping {
     this.disableSnapping = this.disableSnapping.bind(this);
     this.enableSnapping = this.enableSnapping.bind(this);
     this.resetSnappingGeomCache = this.resetSnappingGeomCache.bind(this);
+    this.fetchMapExtentGeometry = this.fetchMapExtentGeometry.bind(this);
     this.fetchSourceGeometry = this.fetchSourceGeometry.bind(this);
+    this.fetchSourceGeometries = this.fetchSourceGeometries.bind(this);
+    this.getClosestPoint = this.getClosestPoint.bind(this);
 
     this.initialize();
-    this._throttledMouseOverHandler = throttle(this._mouseoverHandler, 100);
+    this._throttledMouseMoveHandler = throttle(
+      this._mouseMoveHandler,
+      MOUSEMOVE_THROTTLE_MS
+    );
     this.attachApi(ctx);
   }
 
@@ -75,7 +105,10 @@ class Snapping {
     ctx.api.disableSnapping = this.disableSnapping;
     ctx.api.enableSnapping = this.enableSnapping;
     ctx.api.resetSnappingGeomCache = this.resetSnappingGeomCache;
+    ctx.api.fetchMapExtentGeometry = this.fetchMapExtentGeometry;
     ctx.api.fetchSourceGeometry = this.fetchSourceGeometry;
+    ctx.api.fetchSourceGeometries = this.fetchSourceGeometries;
+    ctx.api.getClosestPoint = this.getClosestPoint;
   }
 
   refreshSnapLayers() {
@@ -124,7 +157,7 @@ class Snapping {
   disableSnapping() {
     this.snappingEnabled = false;
     this._snappableLayers().forEach((l) => this._removeSnapBuffer(l));
-    this.map.off("mousemove", this._throttledMouseOverHandler);
+    this.map.off("mousemove", this._throttledMouseMoveHandler);
     this.map.off("mouseout", this._mouseoutHandler);
     this.map.removeLayer("_snap_vertex");
     this.map.removeSource("_snap_vertex");
@@ -133,12 +166,168 @@ class Snapping {
   enableSnapping() {
     this.snappingEnabled = true;
     this._snappableLayers().forEach((l) => this._addSnapBuffer(l));
-    this.map.on("mousemove", this._throttledMouseOverHandler);
-    this.map.on("mouseout", this._mouseoutHandler);
     this._addSnapSourceAndLayer();
+    this.map.on("mousemove", this._throttledMouseMoveHandler);
+    this.map.on("mouseout", this._mouseoutHandler);
+
+    // If the feature has been snapped to a linestring or
+    // a polygon, nearestPointOnLine may give an innacurate result (e.g., slightly off the line),
+    // especially if the line is very long. Therefore, when the vertex is "complete", we go to the
+    // database to get a point that is truly on the snapped-to feature
+    this.map.on("mousedown", async () => {
+      if (!this.snappedGeometry || !this._isLineDraw()) return;
+
+      this._handleLineStringAndPolygonSnapEnd();
+    });
+
+    this.map.on("mouseup", async () => {
+      if (!this.snappedGeometry || !this._isPointDraw()) return;
+
+      this._handlePointSnapEnd();
+    });
   }
 
-  async _mouseoverHandler(e) {
+  async _handlePointSnapEnd() {
+    if (this._isSnappedToPoint) return;
+
+    const { features } = this.store.ctx.api.getAll();
+    const feature = cloneDeep(features[0]);
+    const [lng, lat] = getCoords(feature);
+
+    const { vetro_id: vetroId } = this.snappedFeature.properties;
+
+    const closestPoint = await this.getClosestPoint(vetroId, lng, lat);
+
+    feature.geometry.coordinates = getCoord(closestPoint);
+
+    const fc = turfFeatureCollection([feature]);
+
+    this.store.ctx.api.set(fc);
+  }
+
+  async _handleLineStringAndPolygonSnapEnd() {
+    if (this._isSnappedToPoint) return;
+
+    const { features } = this.store.ctx.api.getAll();
+    const feature = cloneDeep(features[0]);
+
+    const [lng, lat] = last(getCoords(feature));
+
+    const { vetro_id: vetroId } = this.snappedFeature.properties;
+
+    const closestPoint = await this.getClosestPoint(vetroId, lng, lat);
+
+    feature.geometry.coordinates.splice(-1, 1, getCoord(closestPoint));
+
+    const fc = turfFeatureCollection([feature]);
+
+    this.store.ctx.api.set(fc);
+  }
+
+  _circleFromMousePoint(x, y) {
+    const mouseLatLng = turfPoint(this.map.unproject([x, y]).toArray());
+
+    const snapDistanceDeltaLatLng = turfPoint(
+      this.map.unproject([x + this.snapDistance, y]).toArray()
+    );
+
+    const km = turfDistance(mouseLatLng, snapDistanceDeltaLatLng);
+
+    const circle = turfCircle(this.map.unproject([x, y]).toArray(), km);
+
+    return circle;
+  }
+
+  _getClosestPoint(x, y) {
+    // get point buffers
+    const pointBufferIds = this.bufferLayers
+      .filter((id) => id.endsWith("point"))
+      .map(getBufferLayerId);
+
+    // get close by points
+    const availablePoints = this.map.queryRenderedFeatures([x, y], {
+      layers: pointBufferIds,
+    });
+
+    // everything's a vertex so just return the closest point
+    return availablePoints[0];
+
+    // find closest point to mouse
+
+    // leaving in case we do want to get the closest point
+    // const coordinates = availablePoints.map((f) => getCoord(f));
+
+    // let closestIndex = null;
+    // let closest = null;
+
+    // const { lng, lat } = this.map.unproject([x, y]);
+    // const mousePoint = turfPoint([lng, lat]);
+
+    // coordinates.forEach((coord, index) => {
+    //   const distance = turfDistance(turfPoint(coord), mousePoint);
+
+    //   if (!closest || closest > distance) {
+    //     closest = distance;
+    //     closestIndex = index;
+    //   }
+    // });
+
+    // // return point
+    // if (closestIndex !== null) return availablePoints[closestIndex];
+
+    // return null;
+  }
+
+  async _getClosestLineStringOrPolygon(x, y) {
+    // get linestring and polygon buffers
+    const lnpBufferIds = this.bufferLayers
+      .filter((id) => id.match(/(linestring|polygon)$/))
+      .map(getBufferLayerId);
+
+    // get close by linestring and polygons
+    const availableFeatures = this.map.queryRenderedFeatures([x, y], {
+      layers: lnpBufferIds,
+    });
+
+    if (availableFeatures.length === 0) return null;
+    if (availableFeatures.length === 1) return availableFeatures[0];
+
+    // find an feature that has a vertex near the snap point
+    const circle = this._circleFromMousePoint(x, y);
+
+    // get real geometry for every feature so that it will have all vertexes
+    // limit vertex check to 50 features
+    const fullGeometries = await this.fetchSnapGeometries(
+      availableFeatures.slice(0, 50)
+    );
+
+    const lineStrings = fullGeometries.map(({ coordinates }) =>
+      turfLineString(coordinates)
+    );
+
+    const lineWithCloseVertex = lineStrings.find(
+      (feature) => !!findVertexInCircle(feature, circle)
+    );
+
+    if (lineWithCloseVertex) return lineWithCloseVertex;
+
+    // return the first feature if there is no nearby vertex
+    return availableFeatures[0];
+  }
+
+  _isSnappedToPoint() {
+    return getType(this.snappedFeature) === "Point";
+  }
+
+  _isPointDraw() {
+    return POINT_MODES.includes(this.store.ctx.api.getMode());
+  }
+
+  _isLineDraw() {
+    return LINE_MODES.includes(this.store.ctx.api.getMode());
+  }
+
+  async _mouseMoveHandler(e) {
     const mode = this.store.ctx.api.getMode();
     if ([FREEHAND, MARQUEE, STATIC].includes(mode)) return;
     if (
@@ -148,23 +337,21 @@ class Snapping {
       return;
     }
 
-    const bufferLayerIds = this.bufferLayers.map(getBufferLayerId);
-    const selectedFeature = this.store.ctx.api.getSelected().features[0];
-    const { point: mousePosition } = e;
-    const { x, y } = mousePosition;
+    const {
+      point: { x, y },
+    } = e;
 
-    const featureFilter = getFeatureFilter(
-      selectedFeature,
-      this.snappedFeature,
-      mode
-    );
+    let snapToFeature;
 
-    const snapToFeature = this.map
-      .queryRenderedFeatures([x, y], {
-        layers: bufferLayerIds,
-      })
-      .find(featureFilter);
-    
+    // avoid snapping points to points
+    if (this._isLineDraw()) {
+      snapToFeature = this._getClosestPoint(x, y);
+    }
+
+    if (!snapToFeature) {
+      snapToFeature = await this._getClosestLineStringOrPolygon(x, y);
+    }
+
     if (!snapToFeature) {
       this._mouseoutHandler();
       return;
@@ -174,15 +361,9 @@ class Snapping {
       this._setSnapHoverState(this.snappedFeature, false);
     }
 
-    const lngLat = this.map.unproject(mousePosition);
-
-    const { lng, lat } = lngLat;
-
-    this.snappedGeometry = await this.fetchSnapGeometry(
-      snapToFeature,
-      lng,
-      lat
-    );
+    // snappedGeometry: geometry of snapped-to feature retrieved from database
+    // snappedFeature: mapbox feature of snapped to feature - has metadata but simplified geometry
+    this.snappedGeometry = await this.fetchSnapGeometry(snapToFeature);
 
     if (!this.snappedGeometry) return;
 
@@ -190,31 +371,56 @@ class Snapping {
     this._setSnapHoverState(this.snappedFeature, true);
   }
 
-  snapCoord({ lngLat }, featureFilter) {
-    if (
-      this.snappedGeometry &&
-      this.snappingEnabled &&
-      (!featureFilter || !featureFilter(this.snappedFeature))
-    ) {
-      const hoverPoint = {
-        type: "Point",
-        coordinates: [lngLat.lng, lngLat.lat],
-      };
+  _getVertexOrClosestPoint(snapGeom, mousePoint) {
+    const { x, y } = mousePoint;
 
-      const snapPoint =
-        this.snappedGeometry.type === "Point"
-          ? { type: "Feature", geometry: this.snappedGeometry }
-          : nearestPointOnLine(this.snappedGeometry, hoverPoint);
+    const circle = this._circleFromMousePoint(x, y);
+    const vertex = findVertexInCircle(snapGeom, circle);
 
-      this.map
-        .getSource("_snap_vertex")
-        .setData({ type: "FeatureCollection", features: [snapPoint] });
+    if (vertex) return turfPoint(vertex);
+
+    const hoverPoint = turfPoint(this.map.unproject([x, y]).toArray());
+    const closestPoint = getNearestPointOnLine(snapGeom, hoverPoint);
+
+    return closestPoint;
+  }
+
+  _getSnapPoint(mousePoint) {
+    const coordinates = getCoords(this.snappedGeometry);
+    const geomType = getType(this.snappedGeometry);
+
+    if (geomType === "Point") return turfPoint(coordinates);
+
+    // polygons are converted to lines for snapping, so this will
+    // always be a line if it's not a point
+    const lineString = turfLineString(coordinates);
+
+    return this._getVertexOrClosestPoint(lineString, mousePoint);
+  }
+
+  // uses features established by mousemove handler
+  // might not need feature filter
+  snapCoord({ point: mousePoint, lngLat }, featureFilter) {
+    const snappedFeatureFiltered =
+      featureFilter && featureFilter(this.snappedFeature);
+
+    const shouldSnap =
+      this.snappedGeometry && this.snappingEnabled && !snappedFeatureFiltered;
+
+    if (shouldSnap) {
+      const snapPoint = this._getSnapPoint(mousePoint);
+
+      const fc = turfFeatureCollection([snapPoint]);
+
+      this.map.getSource("_snap_vertex").setData(fc);
 
       this.map.fire("draw.snapped", { snapped: true });
 
+      const [lng, lat] = getCoord(snapPoint);
+
       return {
-        lng: snapPoint.geometry.coordinates[0],
-        lat: snapPoint.geometry.coordinates[1],
+        lng,
+        lat,
         snapped: true,
         snappedFeature: this.snappedFeature,
       };
@@ -263,19 +469,18 @@ class Snapping {
       layerDef,
       this.snapDistance
     );
+
     this.map.addLayer(bufferLayer);
   }
 
   _setSnapHoverState(feature, state) {
     if (feature.id !== undefined) {
-      this.map.setFeatureState(
-        {
-          id: feature.id,
-          source: feature.source,
-          ...(feature.sourceLayer && { sourceLayer: feature.sourceLayer }),
-        },
-        { "snap-hover": state }
-      );
+      const fs = {
+        id: feature.id,
+        source: feature.source,
+      };
+      if (feature.sourceLayer) fs.sourceLayer = feature.sourceLayer;
+      this.map.setFeatureState(fs, { "snap-hover": state });
     }
   }
 

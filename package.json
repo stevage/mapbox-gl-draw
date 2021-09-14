@@ -78,13 +78,17 @@
     "@mapbox/geojson-normalize": "0.0.1",
     "@mapbox/geojsonhint": "3.0.0",
     "@mapbox/point-geometry": "0.1.0",
+    "@turf/circle": "^6.5.0",
     "@turf/distance": "^6.0.1",
     "@turf/helpers": "^6.3.0",
+    "@turf/invariant": "^6.5.0",
     "@turf/nearest-point-on-line": "^6.0.2",
     "@turf/simplify": "^5.1.5",
     "@turf/unkink-polygon": "^6.3.0",
     "hat": "0.0.3",
+    "lodash.clonedeep": "^4.5.0",
     "lodash.isequal": "^4.2.0",
+    "lodash.last": "^3.0.0",
     "lodash.throttle": "^4.1.1",
     "xtend": "^4.0.1"
   }
