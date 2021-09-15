@@ -114,12 +114,10 @@ DirectSelect.dragVertex = function (state, e, delta) {
 };
 
 DirectSelect.clickNoTarget = function () {
-  console.log('click no target');
   this.changeMode(Constants.modes.SIMPLE_SELECT);
 };
 
 DirectSelect.clickInactive = function () {
-  console.log('click inactive');
   this.changeMode(Constants.modes.SIMPLE_SELECT);
 };
 
@@ -142,8 +140,11 @@ DirectSelect.onDblClick = function(state, e) {
     return;
   }
 
-  console.log('------------------------------------------------------------------------------------------------------------------------');
-  console.log('double click in direct select', state, e);
+  const selectedCoordIdx = Number(selectedCoordPaths[0]);
+  this.changeMode(Constants.modes.DRAW_LINE_STRING, {
+    featureId: state.featureId,
+    from: feature.coordinates[selectedCoordIdx]
+  });
 };
 
 // EXTERNAL FUNCTIONS
