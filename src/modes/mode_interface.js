@@ -24,6 +24,8 @@ ModeInterface.prototype.onDrag = function() {};
  */
 ModeInterface.prototype.onClick = function() {};
 
+ModeInterface.prototype.onDblClick = function() { console.log('double click') };
+
 /**
  * Triggered with the mouse is moved
  * @name MODE.onMouseMove

@@ -192,6 +192,19 @@ module.exports = function (ctx) {
     ctx.store.changeZoom();
   };
 
+  events.dblclick = function(event) {
+    if (isStaticMode()) return;
+
+    /* const clickInfo = {
+      time: new Date().getTime(),
+      point: event.point,
+    }; */
+    const target = CM.setCursor(event, "dblclick");
+
+    event.featureTarget = target;
+    currentMode.dblclick(event);
+  };
+
   events.data = function (event) {
     if (event.dataType === "style") {
       const { setup, map, options, store } = ctx;
@@ -271,6 +284,7 @@ module.exports = function (ctx) {
       ctx.map.on("mousedown", events.mousedown);
       ctx.map.on("mouseup", events.mouseup);
       ctx.map.on("data", events.data);
+      ctx.map.on("dblclick", events.dblclick);
 
       ctx.map.on("touchmove", throttle(events.touchmove), 40);
       ctx.map.on("touchstart", events.touchstart);
