@@ -42,7 +42,7 @@ const MOUSE_UP_MODES = [
 
 const MOUSE_DOWN_MODES = [DRAW_LINE_STRING, DRAW_POLYGON];
 
-const MOUSEMOVE_THROTTLE_MS = 16;
+const MOUSEMOVE_THROTTLE_MS = 100;
 
 class Snapping {
   constructor(ctx) {
@@ -255,7 +255,8 @@ class Snapping {
   }
 
   _circleFromMousePoint(x, y) {
-    const mouseLatLng = turfPoint(this.map.unproject([x, y]).toArray());
+    const mousePointAsLngLat = this.map.unproject([x, y]).toArray();
+    const mouseLatLng = turfPoint(mousePointAsLngLat);
 
     const snapDistanceDeltaLatLng = turfPoint(
       this.map.unproject([x + this.snapDistance, y]).toArray()
@@ -263,12 +264,12 @@ class Snapping {
 
     const km = turfDistance(mouseLatLng, snapDistanceDeltaLatLng);
 
-    const circle = turfCircle(this.map.unproject([x, y]).toArray(), km);
+    const circle = turfCircle(mousePointAsLngLat, km);
 
     return circle;
   }
 
-  _getClosestPoint(x, y) {
+  _getClosestMapboxPoint(x, y) {
     // get point buffers
     const pointBufferIds = this.bufferLayers
       .filter((id) => id.endsWith("point"))
@@ -383,7 +384,7 @@ class Snapping {
 
     // avoid snapping points to points
     if (this._isLineDraw()) {
-      snapToFeature = this._getClosestPoint(x, y);
+      snapToFeature = this._getClosestMapboxPoint(x, y);
     }
 
     if (!snapToFeature) {
