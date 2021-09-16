@@ -229,9 +229,7 @@ class Snapping {
     if (this._isSnappedToPoint()) return;
 
     // get edited coordinate
-    const updatedCoord = getCoord(
-      this.store.ctx.api.getSelectedPoints().features[0]
-    );
+    const updatedCoord = this._getUpdatedLineStringCoord();
 
     const [lng, lat] = updatedCoord;
 
@@ -241,7 +239,7 @@ class Snapping {
     const closestPoint = await this.getClosestPoint(vetroId, lng, lat);
 
     // find index of coord to update
-    const feature = cloneDeep(this.store.ctx.api.getSelected().features[0]);
+    const feature = cloneDeep(this.store.ctx.api.getAll().features[0]);
     const index = getCoords(feature).findIndex(
       (coord) => coord[0] === updatedCoord[0] && coord[1] === updatedCoord[1]
     );
@@ -252,6 +250,18 @@ class Snapping {
     // set this feature as the drawing
     const fc = turfFeatureCollection([feature]);
     this.store.ctx.api.set(fc);
+  }
+
+  _getUpdatedLineStringCoord() {
+    if (!this._isLineDraw()) {
+      throw new Error("Cannot get linstring coord for non-line draw");
+    }
+
+    if (this.store.ctx.api.getMode() === "direct_select") {
+      return getCoord(this.store.ctx.api.getSelectedPoints().features[0]);
+    } else {
+      return last(getCoords(this.store.ctx.api.getAll().features[0]));
+    }
   }
 
   _circleFromMousePoint(x, y) {
