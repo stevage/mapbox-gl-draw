@@ -145,6 +145,7 @@ DirectSelect.onDblClick = function(state, e) {
     featureId: state.featureId,
     from: feature.coordinates[selectedCoordIdx]
   });
+  this.map.fire(Constants.events.EXTEND_LINE, { feature });
 };
 
 // EXTERNAL FUNCTIONS
