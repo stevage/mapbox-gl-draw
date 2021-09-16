@@ -1,5 +1,3 @@
-const throttle = require("lodash.throttle");
-
 const setupModeHandler = require("./lib/mode_handler");
 const CursorManager = require("./lib/cursor");
 const featuresAt = require("./lib/features_at");
@@ -267,12 +265,12 @@ module.exports = function (ctx) {
       }
     },
     addEventListeners() {
-      ctx.map.on("mousemove", throttle(events.mousemove, 40));
+      ctx.map.on("mousemove", events.mousemove);
       ctx.map.on("mousedown", events.mousedown);
       ctx.map.on("mouseup", events.mouseup);
       ctx.map.on("data", events.data);
 
-      ctx.map.on("touchmove", throttle(events.touchmove), 40);
+      ctx.map.on("touchmove", events.touchmove);
       ctx.map.on("touchstart", events.touchstart);
       ctx.map.on("touchend", events.touchend);
 
