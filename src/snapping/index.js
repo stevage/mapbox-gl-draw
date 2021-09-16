@@ -30,6 +30,18 @@ const {
 
 const LINE_MODES = [DIRECT_SELECT, DRAW_LINE_STRING, DRAW_POLYGON];
 const POINT_MODES = [SIMPLE_SELECT, DRAW_POINT, COINCIDENT_SELECT];
+
+const MOUSE_UP_MODES = [
+  DIRECT_SELECT,
+  SIMPLE_SELECT,
+  DRAW_POINT,
+  COINCIDENT_SELECT,
+  FREEHAND,
+  MARQUEE,
+];
+
+const MOUSE_DOWN_MODES = [DRAW_LINE_STRING, DRAW_POLYGON];
+
 const MOUSEMOVE_THROTTLE_MS = 16;
 
 class Snapping {
@@ -175,22 +187,30 @@ class Snapping {
     // especially if the line is very long. Therefore, when the vertex is "complete", we go to the
     // database to get a point that is truly on the snapped-to feature
     this.map.on("mousedown", async () => {
-      if (!this.snappedGeometry || !this._isLineDraw()) return;
+      if (!this.snappedGeometry || !this._drawEndsOnMouseDown()) return;
 
-      this._handleLineStringAndPolygonSnapEnd();
+      if (this._isLineDraw()) {
+        this._handleLineStringAndPolygonSnapEnd();
+      } else if (this._isPointDraw()) {
+        this._handlePointSnapEnd();
+      }
     });
 
     this.map.on("mouseup", async () => {
-      if (!this.snappedGeometry || !this._isPointDraw()) return;
+      if (!this.snappedGeometry || !this._drawEndsOnMouseUp()) return;
 
-      this._handlePointSnapEnd();
+      if (this._isLineDraw()) {
+        this._handleLineStringAndPolygonSnapEnd();
+      } else if (this._isPointDraw()) {
+        this._handlePointSnapEnd();
+      }
     });
   }
 
   async _handlePointSnapEnd() {
-    if (this._isSnappedToPoint) return;
+    if (this._isSnappedToPoint()) return;
 
-    const { features } = this.store.ctx.api.getAll();
+    const { features } = this.store.ctx.api.getSelected();
     const feature = cloneDeep(features[0]);
     const [lng, lat] = getCoords(feature);
 
@@ -206,21 +226,31 @@ class Snapping {
   }
 
   async _handleLineStringAndPolygonSnapEnd() {
-    if (this._isSnappedToPoint) return;
+    if (this._isSnappedToPoint()) return;
 
-    const { features } = this.store.ctx.api.getAll();
-    const feature = cloneDeep(features[0]);
+    // get edited coordinate
+    const updatedCoord = getCoord(
+      this.store.ctx.api.getSelectedPoints().features[0]
+    );
 
-    const [lng, lat] = last(getCoords(feature));
+    const [lng, lat] = updatedCoord;
 
     const { vetro_id: vetroId } = this.snappedFeature.properties;
 
+    // get closest point on snapped feature from db, bypassing issues w/ turf/nearest-point-on-line
     const closestPoint = await this.getClosestPoint(vetroId, lng, lat);
 
-    feature.geometry.coordinates.splice(-1, 1, getCoord(closestPoint));
+    // find index of coord to update
+    const feature = cloneDeep(this.store.ctx.api.getSelected().features[0]);
+    const index = getCoords(feature).findIndex(
+      (coord) => coord[0] === updatedCoord[0] && coord[1] === updatedCoord[1]
+    );
 
+    // update feature with the true closest point
+    feature.geometry.coordinates.splice(index, 1, getCoord(closestPoint));
+
+    // set this feature as the drawing
     const fc = turfFeatureCollection([feature]);
-
     this.store.ctx.api.set(fc);
   }
 
@@ -325,6 +355,14 @@ class Snapping {
 
   _isLineDraw() {
     return LINE_MODES.includes(this.store.ctx.api.getMode());
+  }
+
+  _drawEndsOnMouseUp() {
+    return MOUSE_UP_MODES.includes(this.store.ctx.api.getMode());
+  }
+
+  _drawEndsOnMouseDown() {
+    return MOUSE_DOWN_MODES.includes(this.store.ctx.api.getMode());
   }
 
   async _mouseMoveHandler(e) {
