@@ -195,10 +195,6 @@ module.exports = function (ctx) {
   events.dblclick = function(event) {
     if (isStaticMode()) return;
 
-    /* const clickInfo = {
-      time: new Date().getTime(),
-      point: event.point,
-    }; */
     const target = CM.setCursor(event, "dblclick");
 
     event.featureTarget = target;
