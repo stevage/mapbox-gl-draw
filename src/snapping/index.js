@@ -210,8 +210,7 @@ class Snapping {
   async _handlePointSnapEnd() {
     if (this._isSnappedToPoint()) return;
 
-    const { features } = this.store.ctx.api.getSelected();
-    const feature = cloneDeep(features[0]);
+    const feature = cloneDeep(this.store.ctx.api.getAll().features[0]);
     const [lng, lat] = getCoords(feature);
 
     const { vetro_id: vetroId } = this.snappedFeature.properties;
