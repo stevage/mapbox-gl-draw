@@ -210,8 +210,7 @@ class Snapping {
   async _handlePointSnapEnd() {
     if (this._isSnappedToPoint()) return;
 
-    const { features } = this.store.ctx.api.getSelected();
-    const feature = cloneDeep(features[0]);
+    const feature = cloneDeep(this.store.ctx.api.getAll().features[0]);
     const [lng, lat] = getCoords(feature);
 
     const { vetro_id: vetroId } = this.snappedFeature.properties;
@@ -342,8 +341,8 @@ class Snapping {
       availableFeatures.slice(0, 50)
     );
 
-    const lineStrings = fullGeometries.map(({ coordinates }) =>
-      turfLineString(coordinates)
+    const lineStrings = fullGeometries.map(({ coordinates }, index) =>
+      turfLineString(coordinates, availableFeatures[index].properties)
     );
 
     const lineWithCloseVertex = lineStrings.find(
