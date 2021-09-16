@@ -131,12 +131,13 @@ DirectSelect.clickActiveFeature = function (state) {
 DirectSelect.onDblClick = function(state, e) {
   const { feature, selectedCoordPaths } = state;
 
-  if (!e.featureTarget
-    || feature.type !== 'LineString'
-    || selectedCoordPaths.length !== 1
-    || (Number(selectedCoordPaths[0]) !== 0
-      && Number(selectedCoordPaths[0]) !== feature.coordinates.length - 1)
-  ) {
+  const featureClicked = e.featureTarget;
+  const featureIsLine = feature.type === 'LineString';
+  const onlyOneVertexSelected = selectedCoordPaths.length === 1;
+  const selectedVertexIsAtEndOfLine = Number(selectedCoordPaths[0]) === 0
+    || Number(selectedCoordPaths[0]) === feature.coordinates.length - 1
+
+  if (!featureClicked || !featureIsLine || !onlyOneVertexSelected || !selectedVertexIsAtEndOfLine) {
     return;
   }
 
