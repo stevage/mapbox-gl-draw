@@ -69,6 +69,7 @@ module.exports = {
     RENDER: "draw.render",
     COMBINE_FEATURES: "draw.combine",
     UNCOMBINE_FEATURES: "draw.uncombine",
+    EXTEND_LINE: 'draw.extendline',
   },
   updateActions: {
     MOVE: "move",

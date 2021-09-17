@@ -2,6 +2,7 @@
 const ModeHandler = function(mode, DrawContext) {
 
   const handlers = {
+    dblclick: [],
     drag: [],
     click: [],
     mousemove: [],
@@ -73,6 +74,9 @@ const ModeHandler = function(mode, DrawContext) {
       if (mode.uncombineFeatures) {
         mode.uncombineFeatures();
       }
+    },
+    dblclick(event) {
+      delegate('dblclick', event);
     },
     drag(event) {
       delegate('drag', event);

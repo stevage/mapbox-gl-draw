@@ -127,6 +127,29 @@ DirectSelect.clickActiveFeature = function (state) {
   state.feature.changed();
 };
 
+
+DirectSelect.onDblClick = function(state, e) {
+  const { feature, selectedCoordPaths } = state;
+
+  const featureClicked = e.featureTarget;
+  const featureIsLine = feature.type === 'LineString';
+  const onlyOneVertexSelected = selectedCoordPaths.length === 1;
+  const selectedVertexIsAtEndOfLine = onlyOneVertexSelected
+    && (Number(selectedCoordPaths[0]) === 0
+      || Number(selectedCoordPaths[0]) === feature.coordinates.length - 1)
+
+  if (!featureClicked || !featureIsLine || !onlyOneVertexSelected || !selectedVertexIsAtEndOfLine) {
+    return;
+  }
+
+  const selectedCoordIdx = Number(selectedCoordPaths[0]);
+  this.changeMode(Constants.modes.DRAW_LINE_STRING, {
+    featureId: state.featureId,
+    from: feature.coordinates[selectedCoordIdx]
+  });
+  this.map.fire(Constants.events.EXTEND_LINE, { feature });
+};
+
 // EXTERNAL FUNCTIONS
 
 DirectSelect.onSetup = function (opts) {

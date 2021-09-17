@@ -25,6 +25,14 @@ ModeInterface.prototype.onDrag = function() {};
 ModeInterface.prototype.onClick = function() {};
 
 /**
+ * Triggered when the mouse is double clicked
+ * @name MODE.onDblClick
+ * @param state {Object} - a mutable state object created by onSetup
+ * @param e {Object} - the captured event that is triggering this life cycle event
+ */
+ModeInterface.prototype.onDblClick = function() {};
+
+/**
  * Triggered with the mouse is moved
  * @name MODE.onMouseMove
  * @param state {Object} - a mutible state object created by onSetup

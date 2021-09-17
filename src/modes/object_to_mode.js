@@ -1,6 +1,7 @@
 const ModeInterface = require("./mode_interface");
 const _throttle = require("lodash.throttle");
 const eventMapper = {
+  dblclick: 'onDblClick',
   drag: "onDrag",
   click: "onClick",
   mousemove: "onMouseMove",
