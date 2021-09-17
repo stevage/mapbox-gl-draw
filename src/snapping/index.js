@@ -324,8 +324,14 @@ class Snapping {
       .filter((id) => id.match(/(linestring|polygon)$/))
       .map(getBufferLayerId);
 
+    const selected = this.store.ctx.api.getSelected().features[0];
+    const filter = selected
+      ? ["!=", ["get", "vetro_id"], selected.id]
+      : ["all"];
+
     // get close by linestring and polygons
     const availableFeatures = this.map.queryRenderedFeatures([x, y], {
+      filter,
       layers: lnpBufferIds,
     });
 
