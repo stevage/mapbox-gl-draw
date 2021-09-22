@@ -232,7 +232,7 @@ class Snapping {
     if (this._isSnappedToPoint()) return;
 
     // get edited coordinate
-    const updatedCoord = this._getUpdatedLineStringCoord();
+    const updatedCoord = this._getUpdatedLineDrawCoord();
 
     const [lng, lat] = updatedCoord;
 
@@ -243,27 +243,53 @@ class Snapping {
 
     // find index of coord to update
     const feature = cloneDeep(this.store.ctx.api.getAll().features[0]);
-    const index = getCoords(feature).findIndex(
+    const isPolygon = getType(feature) === "Polygon";
+    const coords = isPolygon ? getCoords(feature)[0] : getCoords(feature);
+    const index = coords.findIndex(
       (coord) => coord[0] === updatedCoord[0] && coord[1] === updatedCoord[1]
     );
 
     // update feature with the true closest point
-    feature.geometry.coordinates.splice(index, 1, getCoord(closestPoint));
+    const targetCoordinates = isPolygon
+      ? feature.geometry.coordinates[0]
+      : feature.geometry.coordinates;
+
+    targetCoordinates.splice(index, 1, getCoord(closestPoint));
+
+    // if first coord was changed, need to change last coord as well
+    if (isPolygon && index === 0) {
+      targetCoordinates.splice(
+        feature.geometry.coordinates[0].length - 1,
+        1,
+        getCoord(closestPoint)
+      );
+    }
 
     // set this feature as the drawing
     const fc = turfFeatureCollection([feature]);
     this.store.ctx.api.set(fc);
   }
 
-  _getUpdatedLineStringCoord() {
+  _getUpdatedLineDrawCoord() {
     if (!this._isLineDraw()) {
-      throw new Error("Cannot get linstring coord for non-line draw");
+      throw new Error("Cannot get line draw coord for non-line draw");
     }
 
     if (this.store.ctx.api.getMode() === "direct_select") {
-      return getCoord(this.store.ctx.api.getSelectedPoints().features[0]);
+      const coord = getCoord(
+        this.store.ctx.api.getSelectedPoints().features[0]
+      );
+
+      return coord;
     } else {
-      return last(getCoords(this.store.ctx.api.getAll().features[0]));
+      const feature = this.store.ctx.api.getAll().features[0];
+      const coords = getCoords(feature);
+      if (getType(feature) === "Polygon") {
+        // return 2nd to last coordiante (last coordinate is same as first)
+        return coords[0][coords[0].length - 2];
+      }
+
+      return last(coords);
     }
   }
 
