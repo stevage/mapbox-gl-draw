@@ -189,16 +189,20 @@ class Snapping {
     this.map.on("mousedown", async () => {
       if (!this.snappedGeometry || !this._drawEndsOnMouseDown()) return;
 
-      if (this._isLineDraw()) {
-        this._handleLineStringAndPolygonSnapEnd();
-      } else if (this._isPointDraw()) {
-        this._handlePointSnapEnd();
-      }
+      this._handleSnapEnd();
     });
 
     this.map.on("mouseup", async () => {
       if (!this.snappedGeometry || !this._drawEndsOnMouseUp()) return;
 
+      this._handleSnapEnd();
+    });
+  }
+
+  _handleSnapEnd() {
+    // setTimeout called because sometimes the draw store will not have correct coordinates
+    // (e.g., point draw will have an empty array of coordinates)
+    setTimeout(() => {
       if (this._isLineDraw()) {
         this._handleLineStringAndPolygonSnapEnd();
       } else if (this._isPointDraw()) {
@@ -490,10 +494,15 @@ class Snapping {
 
   _snappableLayers() {
     if (typeof this.snapLayers === "function") {
-      return this.map
-        .getStyle()
-        .layers.filter((l) => !l.id.match(/^_snap_/) && this.snapLayers(l))
-        .map((l) => l.id);
+      const style = this.map.getStyle();
+
+      if (style) {
+        return style.layers
+          .filter((l) => !l.id.match(/^_snap_/) && this.snapLayers(l))
+          .map((l) => l.id);
+      }
+
+      return [];
     } else {
       return this.snapLayers || [];
     }
