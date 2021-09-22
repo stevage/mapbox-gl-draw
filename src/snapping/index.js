@@ -490,10 +490,15 @@ class Snapping {
 
   _snappableLayers() {
     if (typeof this.snapLayers === "function") {
-      return this.map
-        .getStyle()
-        .layers.filter((l) => !l.id.match(/^_snap_/) && this.snapLayers(l))
-        .map((l) => l.id);
+      const style = this.map.getStyle();
+
+      if (style) {
+        return style.layers
+          .filter((l) => !l.id.match(/^_snap_/) && this.snapLayers(l))
+          .map((l) => l.id);
+      }
+
+      return [];
     } else {
       return this.snapLayers || [];
     }
