@@ -171,8 +171,10 @@ class Snapping {
     this._snappableLayers().forEach((l) => this._removeSnapBuffer(l));
     this.map.off("mousemove", this._throttledMouseMoveHandler);
     this.map.off("mouseout", this._mouseoutHandler);
-    this.map.removeLayer("_snap_vertex");
-    this.map.removeSource("_snap_vertex");
+
+    if (this.map.getLayer("_snap_vertex")) this.map.removeLayer("_snap_vertex");
+    if (this.map.getSource("_snap_vertex"))
+      this.map.removeSource("_snap_vertex");
   }
 
   enableSnapping() {
@@ -536,7 +538,7 @@ class Snapping {
 
   _removeSnapBuffer(layerId) {
     const bufferLayerId = getBufferLayerId(layerId);
-    this.map.removeLayer(bufferLayerId);
+    if (this.map.getLayer(bufferLayerId)) this.map.removeLayer(bufferLayerId);
   }
 
   _addSnapBuffer(layerId) {
@@ -598,14 +600,17 @@ class Snapping {
       newLayers
         .filter((l) => this.bufferLayers.includes(l))
         .forEach((l) => {
-          this.map.setFilter(
-            getBufferLayerId(l),
-            this.map
-              .getLayer(l)
-              .filter.filter(
-                (filt) => !(filt instanceof Array) || filt[0] !== "!="
-              )
-          );
+          const bufferLayerId = getBufferLayerId(l);
+
+          if (this.map.getLayer(bufferLayerId)) {
+            const parentFilter = this.map.getLayer(l).filter;
+
+            const bufferFilter = parentFilter.filter(
+              (filt) => !(filt instanceof Array) || filt[0] !== "!="
+            );
+
+            this.map.setFilter(bufferLayerId, bufferFilter);
+          }
         });
       this.bufferLayers = newLayers;
     });
