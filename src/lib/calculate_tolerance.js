@@ -4,6 +4,6 @@
  * @param {number} zoom
  * @return {number} tolerance
  */
- module.exports = function (zoom) {
-  return Math.pow(2, -zoom)
+module.exports = function(zoom) {
+  return Math.pow(2, -zoom);
 };
