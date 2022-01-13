@@ -5,7 +5,7 @@ const StringSet = require("../lib/string_set");
 const doubleClickZoom = require("../lib/double_click_zoom");
 const moveFeatures = require("../lib/move_features");
 const Constants = require("../constants");
-const cursors = Constants.cursors
+const cursors = Constants.cursors;
 
 const CoincidentSelect = {};
 
@@ -72,7 +72,6 @@ CoincidentSelect.onSetup = async function(opts) {
   if (feature.type !== "Point") {
     return;
   }
-  featIds = [feature.id];
   const { x, y } = this._ctx.map.project(feature.coordinates);
   const halfPixels = 5;
   const bbox = [
@@ -80,12 +79,10 @@ CoincidentSelect.onSetup = async function(opts) {
     [x + halfPixels, y + halfPixels]
   ];
   const features = this._ctx.map.queryRenderedFeatures(bbox);
-  const planId = features.find(f => f.properties.vetro_id === feature.id)
-    .properties.plan_id;
 
   for(const f of features){
     if (
-      f.properties.plan_id === planId &&
+      opts.userEditablePlanIds.includes(f.properties.plan_id) &&
       f.geometry.type === "LineString" &&
       !f.layer.id.includes("_snap")
     ) {
