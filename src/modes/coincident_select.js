@@ -8,9 +8,10 @@ const Constants = require("../constants");
 const cursors = Constants.cursors;
 
 const CoincidentSelect = {};
+const roundNumber = input => Math.round(input * 1000000) / 1000000;
 
 const pointsEqual = (point1, point2) =>
-  point1[0] === point2[0] && point1[1] === point2[1];
+  roundNumber(point1[0]) === roundNumber(point2[0]) && roundNumber(point1[1]) === roundNumber(point2[1]);
 
 // OverLoaded function. This is serving both to check if the line is connected to the point
 // and also to return the adjacent point(s) in the line to the connected point
@@ -80,7 +81,7 @@ CoincidentSelect.onSetup = async function(opts) {
   ];
   const features = this._ctx.map.queryRenderedFeatures(bbox);
 
-  for(const f of features){
+  for (const f of features) {
     if (
       opts.userEditablePlanIds.includes(f.properties.plan_id) &&
       f.geometry.type === "LineString" &&
@@ -88,18 +89,18 @@ CoincidentSelect.onSetup = async function(opts) {
     ) {
 
       let lineGeom = f.geometry;
-      if(typeof this._ctx.options.fetchSourceGeometry === "function"){
+      if (typeof this._ctx.options.fetchSourceGeometry === "function") {
 
         const [ lineSrcGeom, ptSrcGeom ] = await Promise.all([
           this._ctx.options.fetchSourceGeometry(f.properties.vetro_id),
           this._ctx.options.fetchSourceGeometry(state.initiallySelectedFeatureIds[0])
         ]);
 
-        if(lineSrcGeom && lineSrcGeom.type && lineSrcGeom.coordinates.length){
+        if (lineSrcGeom && lineSrcGeom.type && lineSrcGeom.coordinates.length) {
           lineGeom = lineSrcGeom;
         }
 
-        if(ptSrcGeom && ptSrcGeom.type && ptSrcGeom.coordinates.length){
+        if (ptSrcGeom && ptSrcGeom.type && ptSrcGeom.coordinates.length) {
           feature = ptSrcGeom;
         }
       }
