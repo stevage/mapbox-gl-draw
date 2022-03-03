@@ -8,10 +8,11 @@ const Constants = require("../constants");
 const cursors = Constants.cursors;
 
 const CoincidentSelect = {};
-const roundNumber = input => Math.round(input * 1000000) / 1000000;
+const roundNumber = (input) => Math.round(input * 1000000) / 1000000;
 
 const pointsEqual = (point1, point2) =>
-  roundNumber(point1[0]) === roundNumber(point2[0]) && roundNumber(point1[1]) === roundNumber(point2[1]);
+  roundNumber(point1[0]) === roundNumber(point2[0]) &&
+  roundNumber(point1[1]) === roundNumber(point2[1]);
 
 // OverLoaded function. This is serving both to check if the line is connected to the point
 // and also to return the adjacent point(s) in the line to the connected point
@@ -23,20 +24,24 @@ const getAdjacentLineData = (lineCoords, pointCoord) => {
     if (pointsEqual(lineCoords[i], pointCoord)) {
       return {
         index: i,
-        adjacentPoints: [lineCoords[i - 1], lineCoords[i + 1]]
+        adjacentPoints: [lineCoords[i - 1], lineCoords[i + 1]],
       };
     }
   }
   if (pointsEqual(lineCoords[lineCoords.length - 1], pointCoord)) {
     return {
       index: lineCoords.length - 1,
-      adjacentPoints: [lineCoords[lineCoords.length - 2]]
+      adjacentPoints: [lineCoords[lineCoords.length - 2]],
     };
   }
   return null;
 };
 
-CoincidentSelect.onSetup = async function(opts) {
+const isPointLinestringEndpoint = (lineCoords, pointCoord) =>
+  pointsEqual(lineCoords[0], pointCoord) ||
+  pointsEqual(lineCoords[lineCoords.length - 1], pointCoord);
+
+CoincidentSelect.onSetup = async function (opts) {
   if (this._ctx.snapping) {
     this._ctx.snapping.setSnapToSelected(false);
   }
@@ -51,7 +56,7 @@ CoincidentSelect.onSetup = async function(opts) {
     dragMoving: false,
     canDragMove: false,
     initiallySelectedFeatureIds: opts.featureIds || [],
-    coincidentData: []
+    coincidentData: [],
   };
 
   this._ctx.setGetCursorTypeLogic(({ overFeatures, isOverSelected }) => {
@@ -65,7 +70,7 @@ CoincidentSelect.onSetup = async function(opts) {
 
   this.setSelected(
     state.initiallySelectedFeatureIds.filter(
-      id => this.getFeature(id) !== undefined
+      (id) => this.getFeature(id) !== undefined
     )
   );
 
@@ -77,23 +82,23 @@ CoincidentSelect.onSetup = async function(opts) {
   const halfPixels = 5;
   const bbox = [
     [x - halfPixels, y - halfPixels],
-    [x + halfPixels, y + halfPixels]
+    [x + halfPixels, y + halfPixels],
   ];
   const features = this._ctx.map.queryRenderedFeatures(bbox);
-
   for (const f of features) {
     if (
       opts.userEditablePlanIds.includes(f.properties.plan_id) &&
       f.geometry.type === "LineString" &&
-      !f.layer.id.includes("_snap")
+      !f.layer.id.includes("_snap") &&
+      isPointLinestringEndpoint(f.geometry.coordinates, feature.coordinates)
     ) {
-
       let lineGeom = f.geometry;
       if (typeof this._ctx.options.fetchSourceGeometry === "function") {
-
-        const [ lineSrcGeom, ptSrcGeom ] = await Promise.all([
+        const [lineSrcGeom, ptSrcGeom] = await Promise.all([
           this._ctx.options.fetchSourceGeometry(f.properties.vetro_id),
-          this._ctx.options.fetchSourceGeometry(state.initiallySelectedFeatureIds[0])
+          this._ctx.options.fetchSourceGeometry(
+            state.initiallySelectedFeatureIds[0]
+          ),
         ]);
 
         if (lineSrcGeom && lineSrcGeom.type && lineSrcGeom.coordinates.length) {
@@ -116,7 +121,7 @@ CoincidentSelect.onSetup = async function(opts) {
           layer_id: f.properties.layer_id,
           oldGeom: lineGeom,
           updateIndex: index,
-          adjacentPoints
+          adjacentPoints,
         });
       }
     }
@@ -127,14 +132,14 @@ CoincidentSelect.onSetup = async function(opts) {
   this.setActionableState({
     combineFeatures: true,
     uncombineFeatures: true,
-    trash: true
+    trash: true,
   });
 
   return state;
 };
 
-CoincidentSelect.fireUpdate = function(coincidentData) {
-  const features = this.getSelected().map(f => f.toGeoJSON());
+CoincidentSelect.fireUpdate = function (coincidentData) {
+  const features = this.getSelected().map((f) => f.toGeoJSON());
   const newPointCoords = features[0].geometry.coordinates;
   const formattedCoincidentData = coincidentData.map(
     ({ id, oldGeom, updateIndex, layer_id }) => {
@@ -144,22 +149,22 @@ CoincidentSelect.fireUpdate = function(coincidentData) {
         "x-vetro": { vetro_id: id, layer_id },
         geometry: {
           ...oldGeom,
-          coordinates: newLineCoords
-        }
+          coordinates: newLineCoords,
+        },
       };
     }
   );
   this.map.fire(Constants.events.UPDATE, {
     action: Constants.updateActions.MOVE,
     features,
-    coincidentData: formattedCoincidentData
+    coincidentData: formattedCoincidentData,
   });
 };
 
-CoincidentSelect.fireActionable = function() {
+CoincidentSelect.fireActionable = function () {
   const selectedFeatures = this.getSelected();
 
-  const multiFeatures = selectedFeatures.filter(feature =>
+  const multiFeatures = selectedFeatures.filter((feature) =>
     this.isInstanceOf("MultiFeature", feature)
   );
 
@@ -168,7 +173,7 @@ CoincidentSelect.fireActionable = function() {
   if (selectedFeatures.length > 1) {
     combineFeatures = true;
     const featureType = selectedFeatures[0].type.replace("Multi", "");
-    selectedFeatures.forEach(feature => {
+    selectedFeatures.forEach((feature) => {
       if (feature.type.replace("Multi", "") !== featureType) {
         combineFeatures = false;
       }
@@ -181,15 +186,15 @@ CoincidentSelect.fireActionable = function() {
   this.setActionableState({
     combineFeatures,
     uncombineFeatures,
-    trash
+    trash,
   });
 };
 
-CoincidentSelect.getUniqueIds = function(allFeatures) {
+CoincidentSelect.getUniqueIds = function (allFeatures) {
   if (!allFeatures.length) return [];
   const ids = allFeatures
-    .map(s => s.properties.id)
-    .filter(id => id !== undefined)
+    .map((s) => s.properties.id)
+    .filter((id) => id !== undefined)
     .reduce((memo, id) => {
       memo.add(id);
       return memo;
@@ -198,7 +203,7 @@ CoincidentSelect.getUniqueIds = function(allFeatures) {
   return ids.values();
 };
 
-CoincidentSelect.stopExtendedInteractions = function(state) {
+CoincidentSelect.stopExtendedInteractions = function (state) {
   if (state.boxSelectElement) {
     if (state.boxSelectElement.parentNode)
       state.boxSelectElement.parentNode.removeChild(state.boxSelectElement);
@@ -213,11 +218,11 @@ CoincidentSelect.stopExtendedInteractions = function(state) {
   state.canDragMove = false;
 };
 
-CoincidentSelect.onStop = function() {
+CoincidentSelect.onStop = function () {
   doubleClickZoom.enable(this);
 };
 
-CoincidentSelect.onMouseMove = function(state) {
+CoincidentSelect.onMouseMove = function (state) {
   // On mousemove that is not a drag, stop extended interactions.
   // This is useful if you drag off the canvas, release the button,
   // then move the mouse back over the canvas --- we don't allow the
@@ -229,7 +234,7 @@ CoincidentSelect.onMouseMove = function(state) {
   return true;
 };
 
-CoincidentSelect.onMouseOut = function(state) {
+CoincidentSelect.onMouseOut = function (state) {
   // As soon as you mouse leaves the canvas, update the feature
   if (state.dragMoving) return this.fireUpdate(state.coincidentData);
 
@@ -237,7 +242,7 @@ CoincidentSelect.onMouseOut = function(state) {
   return true;
 };
 
-CoincidentSelect.onTap = CoincidentSelect.onClick = function(state, e) {
+CoincidentSelect.onTap = CoincidentSelect.onClick = function (state, e) {
   // Click (with or without shift) on no feature
   if (CommonSelectors.noTarget(e)) return this.clickAnywhere(state, e); // also tap
   if (CommonSelectors.isOfMetaType(Constants.meta.VERTEX)(e))
@@ -245,27 +250,27 @@ CoincidentSelect.onTap = CoincidentSelect.onClick = function(state, e) {
   if (CommonSelectors.isFeature(e)) return this.clickOnFeature(state, e);
 };
 
-CoincidentSelect.clickAnywhere = function(state) {
+CoincidentSelect.clickAnywhere = function (state) {
   // Clear the re-render selection
   const wasSelected = this.getSelectedIds();
   if (wasSelected.length) {
     this.clearSelectedFeatures();
-    wasSelected.forEach(id => this.doRender(id));
+    wasSelected.forEach((id) => this.doRender(id));
   }
   doubleClickZoom.enable(this);
   this.stopExtendedInteractions(state);
 };
 
-CoincidentSelect.clickOnVertex = function(state, e) {
+CoincidentSelect.clickOnVertex = function (state, e) {
   // Enter direct select mode
   this.changeMode(Constants.modes.DIRECT_SELECT, {
     featureId: e.featureTarget.properties.parent,
     coordPath: e.featureTarget.properties.coord_path,
-    startPos: e.lngLat
+    startPos: e.lngLat,
   });
 };
 
-CoincidentSelect.startOnActiveFeature = function(state, e) {
+CoincidentSelect.startOnActiveFeature = function (state, e) {
   // Stop any already-underway extended interactions
   this.stopExtendedInteractions(state);
 
@@ -280,7 +285,7 @@ CoincidentSelect.startOnActiveFeature = function(state, e) {
   state.dragMoveLocation = e.lngLat;
 };
 
-CoincidentSelect.clickOnFeature = function(state, e) {
+CoincidentSelect.clickOnFeature = function (state, e) {
   // Stop everything
   doubleClickZoom.disable(this);
   this.stopExtendedInteractions(state);
@@ -298,7 +303,7 @@ CoincidentSelect.clickOnFeature = function(state, e) {
   ) {
     // Enter direct select mode
     return this.changeMode(Constants.modes.DIRECT_SELECT, {
-      featureId
+      featureId,
     });
   }
 
@@ -316,7 +321,7 @@ CoincidentSelect.clickOnFeature = function(state, e) {
     // Click (without shift) on an unselected feature
   } else if (!isFeatureSelected && !isShiftClick) {
     // Make it the only selected feature
-    selectedFeatureIds.forEach(id => this.doRender(id));
+    selectedFeatureIds.forEach((id) => this.doRender(id));
 
     this.setSelected(featureId);
   }
@@ -325,14 +330,14 @@ CoincidentSelect.clickOnFeature = function(state, e) {
   this.doRender(featureId);
 };
 
-CoincidentSelect.onMouseDown = function(state, e) {
+CoincidentSelect.onMouseDown = function (state, e) {
   if (CommonSelectors.isActiveFeature(e))
     return this.startOnActiveFeature(state, e);
   if (this.drawConfig.boxSelect && CommonSelectors.isShiftMousedown(e))
     return this.startBoxSelect(state, e);
 };
 
-CoincidentSelect.startBoxSelect = function(state, e) {
+CoincidentSelect.startBoxSelect = function (state, e) {
   this.stopExtendedInteractions(state);
   this.map.dragPan.disable();
   // Enable box select
@@ -343,18 +348,18 @@ CoincidentSelect.startBoxSelect = function(state, e) {
   state.canBoxSelect = true;
 };
 
-CoincidentSelect.onTouchStart = function(state, e) {
+CoincidentSelect.onTouchStart = function (state, e) {
   if (CommonSelectors.isActiveFeature(e))
     return this.startOnActiveFeature(state, e);
 };
 
-CoincidentSelect.onDrag = function(state, e) {
+CoincidentSelect.onDrag = function (state, e) {
   if (state.canDragMove) return this.dragMove(state, e);
   if (this.drawConfig.boxSelect && state.canBoxSelect)
     return this.whileBoxSelect(state, e);
 };
 
-CoincidentSelect.whileBoxSelect = function(state, e) {
+CoincidentSelect.whileBoxSelect = function (state, e) {
   state.boxSelecting = true;
 
   // Create the box node if it doesn't exist
@@ -377,7 +382,7 @@ CoincidentSelect.whileBoxSelect = function(state, e) {
   state.boxSelectElement.style.height = `${maxY - minY}px`;
 };
 
-CoincidentSelect.dragMove = function(state, e) {
+CoincidentSelect.dragMove = function (state, e) {
   // Dragging when drag move is enabled
   state.dragMoving = true;
   e.originalEvent.stopPropagation();
@@ -392,7 +397,7 @@ CoincidentSelect.dragMove = function(state, e) {
   } else {
     const delta = {
       lng: lngLat.lng - state.dragMoveLocation.lng,
-      lat: lngLat.lat - state.dragMoveLocation.lat
+      lat: lngLat.lat - state.dragMoveLocation.lat,
     };
 
     moveFeatures(this.getSelected(), delta);
@@ -400,29 +405,29 @@ CoincidentSelect.dragMove = function(state, e) {
   state.dragMoveLocation = lngLat;
 };
 
-CoincidentSelect.onMouseUp = function(state, e) {
+CoincidentSelect.onMouseUp = function (state, e) {
   // End any extended interactions
   if (state.dragMoving) {
     this.fireUpdate(state.coincidentData);
   } else if (state.boxSelecting) {
     const bbox = [
       state.boxSelectStartLocation,
-      mouseEventPoint(e.originalEvent, this.map.getContainer())
+      mouseEventPoint(e.originalEvent, this.map.getContainer()),
     ];
     const featuresInBox = this.featuresAt(null, bbox, "click");
     const idsToSelect = this.getUniqueIds(featuresInBox).filter(
-      id => !this.isSelected(id)
+      (id) => !this.isSelected(id)
     );
 
     if (idsToSelect.length) {
       this.select(idsToSelect);
-      idsToSelect.forEach(id => this.doRender(id));
+      idsToSelect.forEach((id) => this.doRender(id));
     }
   }
   this.stopExtendedInteractions(state);
 };
 
-CoincidentSelect.toDisplayFeatures = function(state, geojson, display) {
+CoincidentSelect.toDisplayFeatures = function (state, geojson, display) {
   const { coincidentData } = state;
   geojson.properties.active = this.isSelected(geojson.properties.id)
     ? Constants.activeStates.ACTIVE
@@ -433,12 +438,12 @@ CoincidentSelect.toDisplayFeatures = function(state, geojson, display) {
   createSupplementaryPoints(geojson, { coincidentData }).forEach(display);
 };
 
-CoincidentSelect.onTrash = function() {
+CoincidentSelect.onTrash = function () {
   this.deleteFeature(this.getSelectedIds());
   this.fireActionable();
 };
 
-CoincidentSelect.onCombineFeatures = function() {
+CoincidentSelect.onCombineFeatures = function () {
   const selectedFeatures = this.getSelected();
 
   if (selectedFeatures.length === 0 || selectedFeatures.length < 2) return;
@@ -454,7 +459,7 @@ CoincidentSelect.onCombineFeatures = function() {
       return;
     }
     if (feature.type.includes("Multi")) {
-      feature.getCoordinates().forEach(subcoords => {
+      feature.getCoordinates().forEach((subcoords) => {
         coordinates.push(subcoords);
       });
     } else {
@@ -470,8 +475,8 @@ CoincidentSelect.onCombineFeatures = function() {
       properties: featuresCombined[0].properties,
       geometry: {
         type: `Multi${featureType}`,
-        coordinates
-      }
+        coordinates,
+      },
     });
 
     this.addFeature(multiFeature);
@@ -480,13 +485,13 @@ CoincidentSelect.onCombineFeatures = function() {
 
     this.map.fire(Constants.events.COMBINE_FEATURES, {
       createdFeatures: [multiFeature.toGeoJSON()],
-      deletedFeatures: featuresCombined
+      deletedFeatures: featuresCombined,
     });
   }
   this.fireActionable();
 };
 
-CoincidentSelect.onUncombineFeatures = function() {
+CoincidentSelect.onUncombineFeatures = function () {
   const selectedFeatures = this.getSelected();
   if (selectedFeatures.length === 0) return;
 
@@ -497,7 +502,7 @@ CoincidentSelect.onUncombineFeatures = function() {
     const feature = selectedFeatures[i];
 
     if (this.isInstanceOf("MultiFeature", feature)) {
-      feature.getFeatures().forEach(subFeature => {
+      feature.getFeatures().forEach((subFeature) => {
         this.addFeature(subFeature);
         subFeature.properties = feature.properties;
         createdFeatures.push(subFeature.toGeoJSON());
@@ -511,7 +516,7 @@ CoincidentSelect.onUncombineFeatures = function() {
   if (createdFeatures.length > 1) {
     this.map.fire(Constants.events.UNCOMBINE_FEATURES, {
       createdFeatures,
-      deletedFeatures: featuresUncombined
+      deletedFeatures: featuresUncombined,
     });
   }
   this.fireActionable();
