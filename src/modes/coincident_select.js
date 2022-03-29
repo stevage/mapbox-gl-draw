@@ -8,11 +8,16 @@ const Constants = require("../constants");
 const cursors = Constants.cursors;
 
 const CoincidentSelect = {};
-const roundNumber = (input) => Math.round(input * 1000000) / 1000000;
+const decimalNumber = 1000000;
+const roundNumber = (input) => Math.round(input * decimalNumber) / decimalNumber;
 
 const pointsEqual = (point1, point2) =>
   roundNumber(point1[0]) === roundNumber(point2[0]) &&
   roundNumber(point1[1]) === roundNumber(point2[1]);
+
+const pointsApproximatelyEqual = (point1, point2) =>
+  roundNumber(Math.abs(point1[0] - point2[0])) <= 1 / decimalNumber
+  && roundNumber(Math.abs(point1[1] - point2[1])) <= 1 / decimalNumber;
 
 // OverLoaded function. This is serving both to check if the line is connected to the point
 // and also to return the adjacent point(s) in the line to the connected point
@@ -38,8 +43,8 @@ const getAdjacentLineData = (lineCoords, pointCoord) => {
 };
 
 const isPointLinestringEndpoint = (lineCoords, pointCoord) =>
-  pointsEqual(lineCoords[0], pointCoord) ||
-  pointsEqual(lineCoords[lineCoords.length - 1], pointCoord);
+  pointsApproximatelyEqual(lineCoords[0], pointCoord) ||
+  pointsApproximatelyEqual(lineCoords[lineCoords.length - 1], pointCoord);
 
 CoincidentSelect.onSetup = async function (opts) {
   if (this._ctx.snapping) {
