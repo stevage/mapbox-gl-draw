@@ -418,7 +418,7 @@ class Snapping {
     if ([FREEHAND, MARQUEE, STATIC].includes(mode)) return;
     if (
       [DIRECT_SELECT, SIMPLE_SELECT].includes(mode) &&
-      this.store.ctx.map.dragPan._mousePan._enabled
+      this.store?.ctx?.map?.dragPan?._mousePan?._enabled
     ) {
       return;
     }

@@ -10,7 +10,7 @@ const cursors = Constants.cursors;
 
 const DrawPolygon = {};
 
-DrawPolygon.onSetup = function(opts) {
+DrawPolygon.onSetup = function (opts) {
   if (this._ctx.snapping) {
     this._ctx.snapping.setSnapToSelected(false);
   }
@@ -28,8 +28,8 @@ DrawPolygon.onSetup = function(opts) {
     properties: { selectable: isSelectable(opts) },
     geometry: {
       type: Constants.geojsonTypes.POLYGON,
-      coordinates: [[]]
-    }
+      coordinates: [[]],
+    },
   });
 
   this.addFeature(polygon);
@@ -39,7 +39,7 @@ DrawPolygon.onSetup = function(opts) {
   this.updateUIClasses({ mouse: Constants.cursors.ADD });
   this.activateUIButton(Constants.types.POLYGON);
   this.setActionableState({
-    trash: true
+    trash: true,
   });
 
   return {
@@ -52,7 +52,7 @@ DrawPolygon.onSetup = function(opts) {
   };
 };
 
-DrawPolygon.clickAnywhere = function(state, e) {
+DrawPolygon.clickAnywhere = function (state, e) {
   if (
     state.currentVertexPosition > 0 &&
     isEventAtCoordinates(
@@ -61,7 +61,7 @@ DrawPolygon.clickAnywhere = function(state, e) {
     )
   ) {
     return this.changeMode(Constants.modes.SIMPLE_SELECT, {
-      featureIds: [state.polygon.id]
+      featureIds: [state.polygon.id],
     });
   }
 
@@ -69,7 +69,10 @@ DrawPolygon.clickAnywhere = function(state, e) {
   const ring = state.polygon.coordinates[0].slice();
   ring[ring.length - 1] = [lngLat.lng, lngLat.lat];
 
-  if (ring.length >= 4 && isPolygonSelfIntersecting(createPolygonFromPartialRing(ring))) {
+  if (
+    ring.length >= 4 &&
+    isPolygonSelfIntersecting(createPolygonFromPartialRing(ring))
+  ) {
     return;
   }
 
@@ -86,24 +89,31 @@ DrawPolygon.clickAnywhere = function(state, e) {
     lngLat.lat
   );
 
-  this.map.fire(Constants.events.VERTEX_PLACED, { features: [state.polygon.toGeoJSON()] });
-  
+  this.map.fire(Constants.events.VERTEX_PLACED, {
+    features: [state.polygon.toGeoJSON()],
+  });
+
   if (state.polygon.isCreatingValid()) {
-    this.map.fire(Constants.events.CREATING, { features: [state.polygon.toGeoJSON(true)] });
+    this.map.fire(Constants.events.CREATING, {
+      features: [state.polygon.toGeoJSON(true)],
+    });
   }
 };
 
-DrawPolygon.clickOnVertex = function(state) {
+DrawPolygon.clickOnVertex = function (state) {
   // clicking on the vertex places another vertex so 3 coordinates is actually only 2 vertices for the polygon
   if (state.polygon.coordinates[0].length <= 3) {
     this.deleteFeature([state.polygon.id], { silent: true });
-    return this.changeMode(Constants.modes.DRAW_POLYGON, { multiple: state.multiple, redraw: state.redraw });
+    return this.changeMode(Constants.modes.DRAW_POLYGON, {
+      multiple: state.multiple,
+      redraw: state.redraw,
+    });
   }
 
   if (state.redraw) {
     return this.changeMode(Constants.modes.DRAW_POLYGON, {
       previousFeatureId: state.polygon.id,
-      redraw: true
+      redraw: true,
     });
   }
 
@@ -112,11 +122,11 @@ DrawPolygon.clickOnVertex = function(state) {
   }
 
   return this.changeMode(Constants.modes.SIMPLE_SELECT, {
-    featureIds: [state.polygon.id]
+    featureIds: [state.polygon.id],
   });
 };
 
-DrawPolygon.onMouseMove = function(state, e) {
+DrawPolygon.onMouseMove = function (state, e) {
   const lngLat = this._ctx.snapping.snapCoord(e);
   state.polygon.updateCoordinate(
     `0.${state.currentVertexPosition}`,
@@ -128,7 +138,7 @@ DrawPolygon.onMouseMove = function(state, e) {
   }
 };
 
-DrawPolygon.onTap = DrawPolygon.onClick = function(state, e) {
+DrawPolygon.onTap = DrawPolygon.onClick = function (state, e) {
   if (state.polygon.properties.freehand) return;
 
   // delete previously drawn polygon if it exists
@@ -140,19 +150,23 @@ DrawPolygon.onTap = DrawPolygon.onClick = function(state, e) {
   return this.clickAnywhere(state, e);
 };
 
-DrawPolygon.onStop = function(state) {
+DrawPolygon.onStop = function (state) {
   this.updateUIClasses({ mouse: Constants.cursors.NONE });
   doubleClickZoom.enable(this);
   this.activateUIButton();
 
   // check to see if we've deleted this feature
-  if (this.getFeature(state.polygon.id) === undefined) return;
+  if (
+    state?.polygon?.id === null ||
+    this.getFeature(state.polygon.id) === undefined
+  )
+    return;
 
   //remove last added coordinate
   state.polygon.removeCoordinate(`0.${state.currentVertexPosition}`);
   if (state.polygon.isValid()) {
     this.map.fire(Constants.events.CREATE, {
-      features: [state.polygon.toGeoJSON()]
+      features: [state.polygon.toGeoJSON()],
     });
   } else {
     this.deleteFeature([state.polygon.id], { silent: true });
@@ -160,7 +174,7 @@ DrawPolygon.onStop = function(state) {
   }
 };
 
-DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
+DrawPolygon.toDisplayFeatures = function (state, geojson, display) {
   const isActivePolygon = geojson.properties.id === state.polygon.id;
   geojson.properties.active = isActivePolygon
     ? Constants.activeStates.ACTIVE
@@ -205,12 +219,12 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
     const lineCoordinates = [
       [
         geojson.geometry.coordinates[0][0][0],
-        geojson.geometry.coordinates[0][0][1]
+        geojson.geometry.coordinates[0][0][1],
       ],
       [
         geojson.geometry.coordinates[0][1][0],
-        geojson.geometry.coordinates[0][1][1]
-      ]
+        geojson.geometry.coordinates[0][1][1],
+      ],
     ];
     // create an initial vertex so that we can track the first point on mobile devices
     display({
@@ -218,8 +232,8 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
       properties: geojson.properties,
       geometry: {
         coordinates: lineCoordinates,
-        type: Constants.geojsonTypes.LINE_STRING
-      }
+        type: Constants.geojsonTypes.LINE_STRING,
+      },
     });
     if (coordinateCount === 3) {
       return;
@@ -229,7 +243,7 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
   return display(geojson);
 };
 
-DrawPolygon.onTrash = function(state) {
+DrawPolygon.onTrash = function (state) {
   if (state.redraw || state.ignoreDeleteKey) return;
 
   this.deleteFeature([state.polygon.id], { silent: true });
