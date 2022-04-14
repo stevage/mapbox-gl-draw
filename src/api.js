@@ -5,7 +5,7 @@ const featuresAt = require("./lib/features_at");
 const stringSetsAreEqual = require("./lib/string_sets_are_equal");
 const Constants = require("./constants");
 const StringSet = require("./lib/string_set");
-const { linePaintProperties } = require('./utils');
+const { linePaintProperties } = require("./utils");
 
 const featureTypes = {
   Polygon: require("./feature_types/polygon"),
@@ -13,46 +13,47 @@ const featureTypes = {
   Point: require("./feature_types/point"),
   MultiPolygon: require("./feature_types/multi_feature"),
   MultiLineString: require("./feature_types/multi_feature"),
-  MultiPoint: require("./feature_types/multi_feature")
+  MultiPoint: require("./feature_types/multi_feature"),
 };
 
-module.exports = function(ctx, api) {
+module.exports = function (ctx, api) {
   api.modes = Constants.modes;
 
-  api.getFeatureIdsAt = function(point) {
+  api.getFeatureIdsAt = function (point) {
     const features = featuresAt.click({ point }, null, ctx);
-    return features.map(feature => feature.properties.id);
+    return features.map((feature) => feature.properties.id);
   };
 
-  api.getSelectedIds = function() {
+  api.getSelectedIds = function () {
     return ctx.store.getSelectedIds();
   };
 
-  api.getSelected = function() {
+  api.getSelected = function () {
+    const features = ctx.store
+      ?.getSelectedIds()
+      ?.map((id) => ctx.store.get(id))
+      ?.map((feature) => feature.toGeoJSON()) ?? [];
     return {
       type: Constants.geojsonTypes.FEATURE_COLLECTION,
-      features: ctx.store
-        .getSelectedIds()
-        .map(id => ctx.store.get(id))
-        .map(feature => feature.toGeoJSON())
+      features,
     };
   };
 
-  api.getSelectedPoints = function() {
+  api.getSelectedPoints = function () {
     return {
       type: Constants.geojsonTypes.FEATURE_COLLECTION,
-      features: ctx.store.getSelectedCoordinates().map(coordinate => ({
+      features: ctx.store.getSelectedCoordinates().map((coordinate) => ({
         type: Constants.geojsonTypes.FEATURE,
         properties: {},
         geometry: {
           type: Constants.geojsonTypes.POINT,
-          coordinates: coordinate.coordinates
-        }
-      }))
+          coordinates: coordinate.coordinates,
+        },
+      })),
     };
   };
 
-  api.set = function(featureCollection) {
+  api.set = function (featureCollection) {
     if (
       featureCollection.type === undefined ||
       featureCollection.type !== Constants.geojsonTypes.FEATURE_COLLECTION ||
@@ -65,7 +66,7 @@ module.exports = function(ctx, api) {
     const newIds = api.add(featureCollection);
     const newIdsLookup = new StringSet(newIds);
 
-    toDelete = toDelete.filter(id => !newIdsLookup.has(id));
+    toDelete = toDelete.filter((id) => !newIdsLookup.has(id));
     if (toDelete.length) {
       api.delete(toDelete);
     }
@@ -77,7 +78,7 @@ module.exports = function(ctx, api) {
   api.add = function (geojson) {
     const featureCollection = JSON.parse(JSON.stringify(normalize(geojson)));
 
-    const ids = featureCollection.features.map(feature => {
+    const ids = featureCollection.features.map((feature) => {
       feature.id =
         feature.id ||
         (feature["x-vetro"] && feature["x-vetro"].vetroId) ||
@@ -118,21 +119,23 @@ module.exports = function(ctx, api) {
     return ids;
   };
 
-  api.get = function(id) {
+  api.get = function (id) {
     const feature = ctx.store.get(id);
     if (feature) {
       return feature.toGeoJSON();
     }
   };
 
-  api.getAll = function() {
+  api.getAll = function () {
+    const features =
+      ctx.store.getAll().map((feature) => feature.toGeoJSON()) ?? [];
     return {
       type: Constants.geojsonTypes.FEATURE_COLLECTION,
-      features: ctx.store.getAll().map(feature => feature.toGeoJSON())
+      features,
     };
   };
 
-  api.delete = function(featureIds) {
+  api.delete = function (featureIds) {
     ctx.store.delete(featureIds, { silent: true });
     // If we were in direct select mode and our selected feature no longer exists
     // (because it was deleted), we need to get out of that mode.
@@ -141,7 +144,7 @@ module.exports = function(ctx, api) {
       !ctx.store.getSelectedIds().length
     ) {
       ctx.events.changeMode(Constants.modes.SIMPLE_SELECT, undefined, {
-        silent: true
+        silent: true,
       });
     } else {
       ctx.store.render();
@@ -150,13 +153,13 @@ module.exports = function(ctx, api) {
     return api;
   };
 
-  api.deleteAll = function() {
+  api.deleteAll = function () {
     ctx.store.delete(ctx.store.getAllIds(), { silent: true });
     // If we were in direct select mode, now our selected feature no longer exists,
     // so escape that mode.
     if (api.getMode() === Constants.modes.DIRECT_SELECT) {
       ctx.events.changeMode(Constants.modes.SIMPLE_SELECT, undefined, {
-        silent: true
+        silent: true,
       });
     } else {
       ctx.store.render();
@@ -165,7 +168,7 @@ module.exports = function(ctx, api) {
     return api;
   };
 
-  api.changeMode = function(mode, modeOptions = {}) {
+  api.changeMode = function (mode, modeOptions = {}) {
     // Avoid changing modes just to re-select what's already selected
     if (
       mode === Constants.modes.SIMPLE_SELECT &&
@@ -197,36 +200,39 @@ module.exports = function(ctx, api) {
     return api;
   };
 
-  api.getMode = function() {
+  api.getMode = function () {
     return ctx.events.getMode();
   };
 
-  api.trash = function() {
+  api.trash = function () {
     ctx.events.trash({ silent: true });
     return api;
   };
 
-  api.combineFeatures = function() {
+  api.combineFeatures = function () {
     ctx.events.combineFeatures({ silent: true });
     return api;
   };
 
-  api.uncombineFeatures = function() {
+  api.uncombineFeatures = function () {
     ctx.events.uncombineFeatures({ silent: true });
     return api;
   };
 
-  api.setFeatureProperty = function(featureId, property, value) {
+  api.setFeatureProperty = function (featureId, property, value) {
     ctx.store.setFeatureProperty(featureId, property, value);
     return api;
   };
 
-  api.updateLineWidthProperty = function(value) {
+  api.updateLineWidthProperty = function (value) {
     linePaintProperties.updateLineWidth(ctx, value);
   };
 
-  api.resetLineWidthProperty = function() {
-    linePaintProperties.updateLineWidth(ctx, Constants.paintProperties.LINE.WIDTH);
+  api.resetLineWidthProperty = function () {
+    linePaintProperties.updateLineWidth(
+      ctx,
+      Constants.paintProperties.LINE.WIDTH
+    );
   };
 
   return api;

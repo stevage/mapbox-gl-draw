@@ -6,14 +6,14 @@ const StringSet = require("./string_set");
 const META_TYPES = [
   Constants.meta.FEATURE,
   Constants.meta.MIDPOINT,
-  Constants.meta.VERTEX
+  Constants.meta.VERTEX,
 ];
 
 // Requires either event or bbox
 module.exports = {
   click: featuresAtClick,
   touch: featuresAtTouch,
-  any: anyFeaturesAt
+  any: anyFeaturesAt,
 };
 
 function featuresAtClick(event, bbox, ctx) {
@@ -28,9 +28,16 @@ function anyFeaturesAt(event, bbox, ctx) {
   const box = event
     ? mapEventToBoundingBox(event, ctx.options.clickBuffer)
     : bbox;
-  return ctx.map
-    .queryRenderedFeatures(box)
-    .filter(l => l.layer.id.includes("mapbox-layer") || l.layer.id.includes("gl-draw"));
+  const featuresAt = ctx.map
+    ?.queryRenderedFeatures(box)
+    ?.filter(
+      (l) =>
+        l.layer.id.includes("mapbox-layer") || l.layer.id.includes("gl-draw")
+    );
+  if (featuresAt === null || typeof featuresAt === "undefined") {
+    return [];
+  }
+  return featuresAt;
 }
 
 function featuresAt(event, bbox, ctx, buffer) {
@@ -40,15 +47,15 @@ function featuresAt(event, bbox, ctx, buffer) {
 
   const queryParams = {};
   if (ctx.options.styles)
-    queryParams.layers = ctx.options.styles.map(s => s.id);
+    queryParams.layers = ctx.options.styles.map((s) => s.id);
 
   const features = ctx.map
     .queryRenderedFeatures(box, queryParams)
-    .filter(feature => META_TYPES.indexOf(feature.properties.meta) !== -1);
+    .filter((feature) => META_TYPES.indexOf(feature.properties.meta) !== -1);
 
   const featureIds = new StringSet();
   const uniqueFeatures = [];
-  features.forEach(feature => {
+  features.forEach((feature) => {
     const featureId = feature.properties.id;
     if (featureIds.has(featureId)) return;
     featureIds.add(featureId);
