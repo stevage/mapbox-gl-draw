@@ -8,7 +8,7 @@ const Constants = require("../constants");
 const cursors = Constants.cursors;
 
 const CoincidentSelect = {};
-const decimalNumber = 1000000;
+const decimalNumber = 100000;
 const roundNumber = (input) => Math.round(input * decimalNumber) / decimalNumber;
 
 const pointsEqual = (point1, point2) =>
