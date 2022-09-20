@@ -128,7 +128,7 @@ module.exports = function (ctx, api) {
 
   api.getAll = function () {
     const features =
-      ctx.store.getAll().map((feature) => feature.toGeoJSON()) ?? [];
+      ctx?.store?.getAll().map((feature) => feature.toGeoJSON()) ?? [];
     return {
       type: Constants.geojsonTypes.FEATURE_COLLECTION,
       features,
