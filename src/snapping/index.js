@@ -1,6 +1,7 @@
 const throttle = require("lodash.throttle");
 const getNearestPointOnLine = require("@turf/nearest-point-on-line").default;
 const turfDistance = require("@turf/distance").default;
+const turfFlatten = require("@turf/flatten").default;
 const {
   point: turfPoint,
   lineString: turfLineString,
@@ -459,8 +460,8 @@ class Snapping {
 
   _getVertexOrClosestPoint(snapGeom, mousePoint) {
     const { x, y } = mousePoint;
-
     const circle = this._circleFromMousePoint(x, y);
+    
     const vertex = findVertexInCircle(snapGeom, circle);
 
     if (vertex) return turfPoint(vertex);
@@ -477,9 +478,14 @@ class Snapping {
 
     if (geomType === "Point") return turfPoint(coordinates);
 
+    let lineStringCoordinates = coordinates;
+    if(geomType === 'MultiLineString'){
+      lineStringCoordinates = turfFlatten(this.snappedGeometry).features[0].geometry.coordinates;
+    }
+
     // polygons are converted to lines for snapping, so this will
     // always be a line if it's not a point
-    const lineString = turfLineString(coordinates);
+    const lineString = turfLineString(lineStringCoordinates);
 
     return this._getVertexOrClosestPoint(lineString, mousePoint);
   }
